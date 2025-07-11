@@ -11,15 +11,15 @@ export default function LoginPage() {
             <Lightbulb className="h-8 w-8 text-blue-600" />
             <span className="text-2xl font-bold text-gray-900">IdeaConnect</span>
           </Link>
-          <p className="mt-2 text-gray-600">Sign in to your account</p>
+          <p className="mt-2 text-gray-600">Welcome back</p>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg shadow-lg p-8 border border-gray-200">
           <LoginForm />
         </div>
         
-        <div className="text-center mt-4">
-          <Link href="/" className="text-blue-600 hover:text-blue-800 text-sm">
+        <div className="text-center mt-6">
+          <Link href="/" className="text-blue-600 hover:text-blue-800 text-sm inline-flex items-center">
             ← Back to home
           </Link>
         </div>
