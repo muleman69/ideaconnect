@@ -1,10 +1,37 @@
 "use client"
 
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Lightbulb, User, Search, MessageSquare } from 'lucide-react'
+import { Lightbulb, User, Search, MessageSquare, LogOut } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import type { User as SupabaseUser } from '@supabase/supabase-js'
 
 export function Navigation() {
+  const [user, setUser] = useState<SupabaseUser | null>(null)
+  const supabase = createClient()
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setUser(user)
+    }
+
+    getUser()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null)
+      }
+    )
+
+    return () => subscription.unsubscribe()
+  }, [supabase])
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut()
+  }
+
   return (
     <nav className="border-b bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -16,34 +43,50 @@ export function Navigation() {
             </Link>
           </div>
           
-          <div className="hidden md:flex items-center space-x-8">
-            <Link href="/ideas" className="text-gray-600 hover:text-gray-900">
-              Browse Ideas
-            </Link>
-            <Link href="/dashboard" className="text-gray-600 hover:text-gray-900">
-              Dashboard
-            </Link>
-            <Link href="/messages" className="text-gray-600 hover:text-gray-900 flex items-center space-x-1">
-              <MessageSquare className="h-4 w-4" />
-              <span>Messages</span>
-            </Link>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/search">
-                <Search className="h-4 w-4" />
-              </Link>
-            </Button>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/profile">
-                <User className="h-4 w-4" />
-              </Link>
-            </Button>
-            <Button asChild>
-              <Link href="/ideas/create">Post Idea</Link>
-            </Button>
-          </div>
+          {user ? (
+            <>
+              <div className="hidden md:flex items-center space-x-8">
+                <Link href="/ideas" className="text-gray-600 hover:text-gray-900">
+                  Browse Ideas
+                </Link>
+                <Link href="/dashboard" className="text-gray-600 hover:text-gray-900">
+                  Dashboard
+                </Link>
+                <Link href="/messages" className="text-gray-600 hover:text-gray-900 flex items-center space-x-1">
+                  <MessageSquare className="h-4 w-4" />
+                  <span>Messages</span>
+                </Link>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/search">
+                    <Search className="h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/profile">
+                    <User className="h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button asChild>
+                  <Link href="/ideas/create">Post Idea</Link>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={handleSignOut}>
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center space-x-4">
+              <Button variant="ghost" asChild>
+                <Link href="/login">Sign In</Link>
+              </Button>
+              <Button asChild>
+                <Link href="/login">Get Started</Link>
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </nav>

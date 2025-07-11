@@ -9,8 +9,8 @@ IdeaConnect is a collaborative platform for entrepreneurs to share ideas, find c
 - **Framework**: Next.js 13+ with App Router
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
-- **Database**: Prisma ORM
-- **Authentication**: Clerk
+- **Database**: Prisma ORM + Supabase PostgreSQL
+- **Authentication**: Supabase Auth
 - **UI Components**: Shadcn/UI
 - **Icons**: Lucide React
 - **Form Management**: React Hook Form + Zod
@@ -44,10 +44,11 @@ src/
 5. Follow accessibility best practices
 
 ### Authentication & Security
-- Use Clerk for user authentication
-- Implement proper route protection
+- Use Supabase Auth for user authentication
+- Implement proper route protection with middleware
 - Validate all user inputs
 - Follow security best practices for API routes
+- Use Row Level Security (RLS) in Supabase where appropriate
 
 ### Database
 - Use Prisma for database operations

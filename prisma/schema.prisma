@@ -14,8 +14,8 @@ datasource db {
 }
 
 model User {
-  id          String   @id @default(cuid())
-  clerkId     String   @unique
+  id          String   @id @default(uuid()) @db.Uuid
+  supabaseId  String   @unique
   email       String   @unique
   name        String?
   bio         String?
@@ -23,8 +23,8 @@ model User {
   skills      String[]
   linkedinUrl String?
   imageUrl    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
   
   ideas       Idea[]
   interests   Interest[]
@@ -32,10 +32,12 @@ model User {
   connectedBy Connection[] @relation("ConnectedUsers")
   sentMessages     Message[] @relation("SentMessages")
   receivedMessages Message[] @relation("ReceivedMessages")
+
+  @@map("users")
 }
 
 model Idea {
-  id          String   @id @default(cuid())
+  id          String   @id @default(uuid()) @db.Uuid
   title       String
   description String
   category    String
@@ -43,48 +45,54 @@ model Idea {
   equity      String?
   skills      String[]
   location    String?
-  authorId    String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  authorId    String   @db.Uuid
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
   
   author      User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
   interests   Interest[]
+
+  @@map("ideas")
 }
 
 model Interest {
-  id        String   @id @default(cuid())
-  userId    String
-  ideaId    String
-  createdAt DateTime @default(now())
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  ideaId    String   @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
   
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   idea Idea @relation(fields: [ideaId], references: [id], onDelete: Cascade)
   
   @@unique([userId, ideaId])
+  @@map("interests")
 }
 
 model Connection {
-  id               String   @id @default(cuid())
-  userId           String
-  connectedUserId  String
+  id               String   @id @default(uuid()) @db.Uuid
+  userId           String   @db.Uuid
+  connectedUserId  String   @db.Uuid
   status           String   @default("pending") // pending, accepted, rejected
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt        DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime @updatedAt @db.Timestamptz(6)
   
   user        User @relation("UserConnections", fields: [userId], references: [id], onDelete: Cascade)
   connectedUser User @relation("ConnectedUsers", fields: [connectedUserId], references: [id], onDelete: Cascade)
   
   @@unique([userId, connectedUserId])
+  @@map("connections")
 }
 
 model Message {
-  id         String   @id @default(cuid())
-  senderId   String
-  receiverId String
+  id         String   @id @default(uuid()) @db.Uuid
+  senderId   String   @db.Uuid
+  receiverId String   @db.Uuid
   content    String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
   
   sender   User @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
   receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
 }

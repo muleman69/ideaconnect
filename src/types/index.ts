@@ -1,6 +1,6 @@
 export interface User {
   id: string;
-  clerkId: string;
+  supabaseId: string;
   email: string;
   name: string | null;
   bio: string | null;
