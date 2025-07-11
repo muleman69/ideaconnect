@@ -32,7 +32,23 @@ export function LoginForm() {
       if (error) {
         setError(error.message)
       } else {
-        setMessage('Check your email for the confirmation link!')
+        // Send welcome email
+        try {
+          await fetch('/api/emails/send-welcome', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email,
+              name: email.split('@')[0], // Use email prefix as temporary name
+            }),
+          });
+        } catch (emailError) {
+          console.warn('Failed to send welcome email:', emailError);
+        }
+        
+        setMessage('Account created! Check your email for the confirmation link and welcome message.')
       }
       setLoading(false)
     } else {
