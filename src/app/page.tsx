@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Lightbulb, Users, MessageSquare, TrendingUp } from 'lucide-react'
+import { Lightbulb, Users, TrendingUp } from 'lucide-react'
 
 export default function Home() {
   return (
