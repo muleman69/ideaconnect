@@ -3,9 +3,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 
 export function LoginForm() {
   const [email, setEmail] = useState('')
@@ -76,8 +73,10 @@ export function LoginForm() {
     <div className="w-full max-w-md space-y-4">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input
+          <label htmlFor="email" className="block text-sm font-bold text-black">
+            Email
+          </label>
+          <input
             id="email"
             type="email"
             placeholder="Enter your email"
@@ -85,12 +84,14 @@ export function LoginForm() {
             onChange={(e) => setEmail(e.target.value)}
             disabled={loading}
             required
-            className="bg-white"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-black disabled:cursor-not-allowed"
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
-          <Input
+          <label htmlFor="password" className="block text-sm font-bold text-black">
+            Password
+          </label>
+          <input
             id="password"
             type="password"
             placeholder={isSignUp ? "Create a password (min 6 characters)" : "Enter your password"}
@@ -99,7 +100,7 @@ export function LoginForm() {
             disabled={loading}
             required
             minLength={6}
-            className="bg-white"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-black disabled:cursor-not-allowed"
           />
         </div>
         
@@ -115,16 +116,20 @@ export function LoginForm() {
           </div>
         )}
         
-        <Button type="submit" disabled={loading} className="w-full">
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-semibold py-2 px-4 rounded-md transition-colors"
+        >
           {loading ? (isSignUp ? 'Creating account...' : 'Signing in...') : (isSignUp ? 'Sign Up' : 'Sign In')}
-        </Button>
+        </button>
       </form>
       
       <div className="text-center">
         <button
           type="button"
           onClick={toggleMode}
-          className="text-blue-600 hover:text-blue-800 text-sm underline"
+          className="text-blue-600 hover:text-blue-800 text-sm underline font-medium"
           disabled={loading}
         >
           {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}

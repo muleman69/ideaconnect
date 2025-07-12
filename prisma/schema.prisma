@@ -32,25 +32,40 @@ model User {
   connectedBy Connection[] @relation("ConnectedUsers")
   sentMessages     Message[] @relation("SentMessages")
   receivedMessages Message[] @relation("ReceivedMessages")
+  discussions      IdeaDiscussion[]
+  createdTeams     IdeaTeam[] @relation("TeamCreator")
+  teamMemberships  TeamMember[]
 
   @@map("users")
 }
 
 model Idea {
-  id          String   @id @default(uuid()) @db.Uuid
-  title       String
-  description String
-  category    String
-  stage       String
-  equity      String?
-  skills      String[]
-  location    String?
-  authorId    String   @db.Uuid
-  createdAt   DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+  id             String   @id @default(uuid()) @db.Uuid
+  title          String
+  description    String
+  category       String
+  stage          String?
+  equity         String?
+  skills         String[]
+  location       String?
+  authorId       String?  @db.Uuid
   
-  author      User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  interests   Interest[]
+  // IdeaBrowser integration fields
+  sourceUrl      String?
+  sourceId       String?  @unique // IdeaBrowser ID
+  difficultyLevel Int?
+  marketSize     String?
+  featuredDate   DateTime? @db.Date
+  isFeatured     Boolean  @default(false)
+  syncedAt       DateTime? @db.Timestamptz(6)
+  
+  createdAt      DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime @updatedAt @db.Timestamptz(6)
+  
+  author        User?           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  interests     Interest[]
+  discussions   IdeaDiscussion[]
+  teams         IdeaTeam[]
 
   @@map("ideas")
 }
@@ -95,4 +110,52 @@ model Message {
   receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
 
   @@map("messages")
+}
+
+model IdeaDiscussion {
+  id        String   @id @default(uuid()) @db.Uuid
+  ideaId    String   @db.Uuid
+  userId    String   @db.Uuid
+  content   String
+  parentId  String?  @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+  
+  idea      Idea             @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent    IdeaDiscussion?  @relation("DiscussionThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   IdeaDiscussion[] @relation("DiscussionThread")
+
+  @@map("idea_discussions")
+}
+
+model IdeaTeam {
+  id          String   @id @default(uuid()) @db.Uuid
+  ideaId      String   @db.Uuid
+  name        String
+  description String?
+  maxMembers  Int      @default(5)
+  createdById String   @db.Uuid
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+  
+  idea        Idea           @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  createdBy   User           @relation("TeamCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  members     TeamMember[]
+
+  @@map("idea_teams")
+}
+
+model TeamMember {
+  id       String   @id @default(uuid()) @db.Uuid
+  teamId   String   @db.Uuid
+  userId   String   @db.Uuid
+  role     String   @default("member")
+  joinedAt DateTime @default(now()) @db.Timestamptz(6)
+  
+  team     IdeaTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([teamId, userId])
+  @@map("team_members")
 }

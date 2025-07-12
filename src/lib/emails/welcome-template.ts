@@ -1,35 +1,20 @@
 export const getWelcomeEmailTemplate = (name: string = 'there') => {
   return `
 <!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="x-apple-disable-message-reformatting">
     <title>Welcome to IdeaConnect</title>
-    <!--[if mso]>
-    <noscript>
-        <xml>
-            <o:OfficeDocumentSettings>
-                <o:PixelsPerInch>96</o:PixelsPerInch>
-            </o:OfficeDocumentSettings>
-        </xml>
-    </noscript>
-    <![endif]-->
     <style>
-        /* Reset and base styles */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
             line-height: 1.6;
             color: #374151;
             background-color: #f9fafb;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
         }
         
         .container {
@@ -38,103 +23,113 @@ export const getWelcomeEmailTemplate = (name: string = 'there') => {
             background-color: #ffffff;
         }
         
-        /* Header styles */
         .header {
             background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
-            padding: 40px 30px;
+            padding: 40px 32px;
             text-align: center;
         }
         
         .logo {
+            color: white;
+            font-size: 28px;
+            font-weight: 700;
+            text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            color: white;
-            text-decoration: none;
-            font-size: 24px;
-            font-weight: 700;
+            gap: 12px;
         }
         
         .logo-icon {
-            width: 32px;
-            height: 32px;
-            background: white;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 24px;
         }
         
-        /* Content styles */
         .content {
-            padding: 40px 30px;
+            padding: 48px 32px;
         }
         
         .greeting {
-            font-size: 24px;
-            font-weight: 600;
+            font-size: 32px;
+            font-weight: 700;
             color: #1E293B;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
         
         .intro {
-            font-size: 16px;
+            font-size: 18px;
             color: #64748B;
-            margin-bottom: 30px;
+            margin-bottom: 48px;
+            line-height: 1.7;
         }
         
-        .section {
-            margin-bottom: 40px;
+        .intro p {
+            margin-bottom: 16px;
         }
         
         .section-title {
-            font-size: 20px;
-            font-weight: 600;
+            font-size: 24px;
+            font-weight: 700;
             color: #1E293B;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            margin-bottom: 32px;
         }
         
         .action-item {
+            background: #F0F9FF;
+            border: 1px solid #E0F2FE;
+            border-radius: 8px;
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+        
+        .action-header {
             display: flex;
-            align-items: flex-start;
-            gap: 15px;
-            margin-bottom: 25px;
-            padding: 20px;
-            background: #F8FAFC;
-            border-radius: 12px;
-            border-left: 4px solid #3B82F6;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
         }
         
         .action-emoji {
+            width: 48px;
+            height: 48px;
+            background: #3B82F6;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+        
+        .action-title {
             font-size: 20px;
-            flex-shrink: 0;
-        }
-        
-        .action-content h3 {
-            font-size: 16px;
-            font-weight: 600;
+            font-weight: 700;
             color: #1E293B;
-            margin-bottom: 5px;
+            margin: 0;
         }
         
-        .action-content p {
-            font-size: 14px;
+        .action-description {
+            font-size: 16px;
             color: #64748B;
-            margin-bottom: 15px;
+            margin: 0 0 24px 0;
+            line-height: 1.6;
         }
         
         .btn {
             display: inline-block;
-            padding: 12px 24px;
+            padding: 14px 28px;
             background: #3B82F6;
             color: white;
             text-decoration: none;
-            border-radius: 8px;
+            border-radius: 6px;
             font-weight: 600;
-            font-size: 14px;
-            transition: background-color 0.3s ease;
+            font-size: 16px;
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
         }
         
         .btn:hover {
@@ -142,91 +137,108 @@ export const getWelcomeEmailTemplate = (name: string = 'there') => {
         }
         
         .checklist {
-            background: #F0F9FF;
-            border: 1px solid #E0F2FE;
-            border-radius: 12px;
-            padding: 25px;
+            background: #F9FAFB;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            padding: 32px;
+            margin-bottom: 48px;
         }
         
         .checklist-item {
             display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-            font-size: 14px;
-            color: #475569;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 16px;
+            font-size: 16px;
+            color: #374151;
+        }
+        
+        .checklist-item:last-child {
+            margin-bottom: 0;
         }
         
         .checkbox {
-            width: 18px;
-            height: 18px;
-            border: 2px solid #3B82F6;
+            width: 24px;
+            height: 24px;
+            background: #3B82F6;
             border-radius: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
             flex-shrink: 0;
+            margin-top: 2px;
         }
         
         .closing {
-            background: #FFF7ED;
-            border: 1px solid #FDBA74;
-            border-radius: 12px;
-            padding: 25px;
-            margin-top: 30px;
+            background: #FEF9C3;
+            border: 1px solid #FDE047;
+            border-radius: 8px;
+            padding: 32px;
+            margin-top: 48px;
         }
         
         .closing p {
-            font-size: 14px;
+            font-size: 16px;
             color: #92400E;
-            margin-bottom: 10px;
+            margin-bottom: 16px;
+            line-height: 1.6;
         }
         
         .closing .signature {
-            font-weight: 600;
+            font-weight: 700;
             color: #1E293B;
+            margin-bottom: 0;
         }
         
-        /* Footer styles */
+        .closing .ps {
+            font-style: italic;
+            color: #A16207;
+            border-top: 1px solid #FDE047;
+            padding-top: 16px;
+            margin-top: 24px;
+            margin-bottom: 0;
+        }
+        
         .footer {
             background: #1E293B;
             color: white;
-            padding: 30px;
+            padding: 48px 32px;
             text-align: center;
         }
         
         .footer-brand {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 5px;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
         }
         
         .footer-tagline {
-            font-size: 14px;
+            font-size: 16px;
             color: #94A3B8;
-            margin-bottom: 25px;
+            margin-bottom: 32px;
         }
         
         .social-links {
             display: flex;
             justify-content: center;
-            gap: 15px;
-            margin-bottom: 25px;
+            gap: 16px;
+            margin-bottom: 32px;
         }
         
         .social-link {
-            display: inline-block;
-            width: 40px;
-            height: 40px;
-            background: #374151;
-            border-radius: 50%;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
+            width: 48px;
+            height: 48px;
+            background: #374151;
+            border-radius: 12px;
             text-decoration: none;
             color: white;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
+            font-size: 20px;
         }
         
         .social-link:hover {
@@ -234,8 +246,10 @@ export const getWelcomeEmailTemplate = (name: string = 'there') => {
         }
         
         .footer-links {
-            font-size: 12px;
+            font-size: 14px;
             color: #94A3B8;
+            padding-top: 24px;
+            border-top: 1px solid #374151;
         }
         
         .footer-links a {
@@ -247,31 +261,44 @@ export const getWelcomeEmailTemplate = (name: string = 'there') => {
             color: white;
         }
         
-        /* Mobile responsive */
         @media (max-width: 600px) {
             .header {
-                padding: 30px 20px;
+                padding: 32px 24px;
             }
             
             .content {
-                padding: 30px 20px;
+                padding: 32px 24px;
             }
             
             .footer {
-                padding: 30px 20px;
-            }
-            
-            .action-item {
-                flex-direction: column;
-                gap: 10px;
+                padding: 32px 24px;
             }
             
             .greeting {
+                font-size: 28px;
+            }
+            
+            .intro {
+                font-size: 16px;
+            }
+            
+            .section-title {
                 font-size: 20px;
             }
             
-            .social-links {
-                flex-wrap: wrap;
+            .action-item {
+                padding: 24px;
+            }
+            
+            .action-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 12px;
+            }
+            
+            .btn {
+                width: 100%;
+                text-align: center;
             }
         }
     </style>
@@ -281,19 +308,14 @@ export const getWelcomeEmailTemplate = (name: string = 'there') => {
         <!-- Header -->
         <div class="header">
             <a href="${process.env.NEXT_PUBLIC_APP_URL}" class="logo">
-                <div class="logo-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2">
-                        <path d="M9 12l2 2 4-4"></path>
-                        <path d="M21 12c0 1.3-.2 2.5-.5 3.7a10.5 10.5 0 0 1-1.9 3.1 10.5 10.5 0 0 1-3.1 1.9c-1.2.3-2.4.5-3.7.5s-2.5-.2-3.7-.5a10.5 10.5 0 0 1-3.1-1.9 10.5 10.5 0 0 1-1.9-3.1c-.3-1.2-.5-2.4-.5-3.7s.2-2.5.5-3.7a10.5 10.5 0 0 1 1.9-3.1 10.5 10.5 0 0 1 3.1-1.9c1.2-.3 2.4-.5 3.7-.5s2.5.2 3.7.5a10.5 10.5 0 0 1 3.1 1.9 10.5 10.5 0 0 1 1.9 3.1c.3 1.2.5 2.4.5 3.7z"></path>
-                    </svg>
-                </div>
+                <div class="logo-icon">💡</div>
                 IdeaConnect
             </a>
         </div>
         
         <!-- Content -->
         <div class="content">
-            <div class="greeting">Hi ${name},</div>
+            <h1 class="greeting">Hi ${name},</h1>
             
             <div class="intro">
                 <p>Welcome to IdeaConnect - where entrepreneurs come together to transform ideas into thriving businesses!</p>
@@ -304,30 +326,30 @@ export const getWelcomeEmailTemplate = (name: string = 'there') => {
                 <h2 class="section-title">Here's What You Can Do Right Now:</h2>
                 
                 <div class="action-item">
-                    <div class="action-emoji">✨</div>
-                    <div class="action-content">
-                        <h3>Browse Today's Ideas</h3>
-                        <p>Discover the latest startup ideas from IdeaBrowser and join discussions with fellow entrepreneurs who share your interests.</p>
-                        <a href="${process.env.NEXT_PUBLIC_APP_URL}/ideas" class="btn">Explore Ideas</a>
+                    <div class="action-header">
+                        <div class="action-emoji">✨</div>
+                        <h3 class="action-title">Browse Today's Ideas</h3>
                     </div>
+                    <p class="action-description">Discover the latest startup ideas from IdeaBrowser and join discussions with fellow entrepreneurs who share your interests.</p>
+                    <a href="${process.env.NEXT_PUBLIC_APP_URL}/ideas" class="btn">Explore Ideas</a>
                 </div>
                 
                 <div class="action-item">
-                    <div class="action-emoji">🤝</div>
-                    <div class="action-content">
-                        <h3>Complete Your Profile</h3>
-                        <p>Add your skills, interests, and what you're looking for. The more complete your profile, the better matches you'll find.</p>
-                        <a href="${process.env.NEXT_PUBLIC_APP_URL}/profile" class="btn">Complete Profile</a>
+                    <div class="action-header">
+                        <div class="action-emoji">🤝</div>
+                        <h3 class="action-title">Complete Your Profile</h3>
                     </div>
+                    <p class="action-description">Add your skills, interests, and what you're looking for. The more complete your profile, the better matches you'll find.</p>
+                    <a href="${process.env.NEXT_PUBLIC_APP_URL}/profile" class="btn">Complete Profile</a>
                 </div>
                 
                 <div class="action-item">
-                    <div class="action-emoji">💬</div>
-                    <div class="action-content">
-                        <h3>Join the Conversation</h3>
-                        <p>Jump into idea discussions, share your insights, and connect with potential co-founders.</p>
-                        <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" class="btn">Join Discussions</a>
+                    <div class="action-header">
+                        <div class="action-emoji">💬</div>
+                        <h3 class="action-title">Join the Conversation</h3>
                     </div>
+                    <p class="action-description">Jump into idea discussions, share your insights, and connect with potential co-founders.</p>
+                    <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" class="btn">Join Discussions</a>
                 </div>
             </div>
             
@@ -335,19 +357,19 @@ export const getWelcomeEmailTemplate = (name: string = 'there') => {
                 <h2 class="section-title">Your First Week Checklist:</h2>
                 <div class="checklist">
                     <div class="checklist-item">
-                        <div class="checkbox">□</div>
+                        <div class="checkbox">✓</div>
                         <span>Set up your profile with skills and interests</span>
                     </div>
                     <div class="checklist-item">
-                        <div class="checkbox">□</div>
+                        <div class="checkbox">✓</div>
                         <span>Browse and bookmark 3 ideas that excite you</span>
                     </div>
                     <div class="checklist-item">
-                        <div class="checkbox">□</div>
+                        <div class="checkbox">✓</div>
                         <span>Comment on at least one idea discussion</span>
                     </div>
                     <div class="checklist-item">
-                        <div class="checkbox">□</div>
+                        <div class="checkbox">✓</div>
                         <span>Connect with 2 entrepreneurs with complementary skills</span>
                     </div>
                 </div>
@@ -357,7 +379,7 @@ export const getWelcomeEmailTemplate = (name: string = 'there') => {
                 <p>Remember, every successful company started with people just like you taking that first step. Whether you're technical, creative, or business-minded, there's a perfect match waiting for you here.</p>
                 <p>Questions? Reply to this email - we're here to help!</p>
                 <p class="signature">Let's build something incredible together,<br><strong>The IdeaConnect Team</strong></p>
-                <p style="margin-top: 20px; font-style: italic; color: #B45309;">P.S. Pro tip: The best collaborations happen when you're active in discussions. Don't be shy - your next co-founder might be one conversation away!</p>
+                <p class="ps">P.S. Pro tip: The best collaborations happen when you're active in discussions. Don't be shy - your next co-founder might be one conversation away!</p>
             </div>
         </div>
         

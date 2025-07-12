@@ -46,13 +46,13 @@ export function Navigation() {
           {user ? (
             <>
               <div className="hidden md:flex items-center space-x-8">
-                <Link href="/ideas" className="text-gray-600 hover:text-gray-900">
+                <Link href="/ideas" className="text-gray-700 hover:text-gray-900 font-medium">
                   Browse Ideas
                 </Link>
-                <Link href="/dashboard" className="text-gray-600 hover:text-gray-900">
+                <Link href="/dashboard" className="text-gray-700 hover:text-gray-900 font-medium">
                   Dashboard
                 </Link>
-                <Link href="/messages" className="text-gray-600 hover:text-gray-900 flex items-center space-x-1">
+                <Link href="/messages" className="text-gray-700 hover:text-gray-900 font-medium flex items-center space-x-1">
                   <MessageSquare className="h-4 w-4" />
                   <span>Messages</span>
                 </Link>
@@ -79,12 +79,18 @@ export function Navigation() {
             </>
           ) : (
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" asChild>
-                <Link href="/login">Sign In</Link>
-              </Button>
-              <Button asChild>
-                <Link href="/login">Get Started</Link>
-              </Button>
+              <Link 
+                href="/login" 
+                className="bg-transparent border border-blue-600 text-blue-600 hover:bg-blue-50 px-4 py-2 rounded font-medium transition-colors"
+              >
+                Sign In
+              </Link>
+              <Link 
+                href="/login" 
+                className="bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded font-medium transition-colors ml-4"
+              >
+                Get Started
+              </Link>
             </div>
           )}
         </div>

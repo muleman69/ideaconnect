@@ -1,6 +1,9 @@
 import sgMail from '@sendgrid/mail';
 import { getWelcomeEmailTemplate } from './welcome-template';
 import { getVerificationEmailTemplate } from './verification-template';
+import { getIdeaMatchTemplate, type IdeaMatchData } from './idea-match-template';
+import { getWeeklyDigestTemplate, type WeeklyDigestData } from './weekly-digest-template';
+import { getTeamInvitationTemplate, type TeamInvitationData } from './team-invitation-template';
 
 // Initialize SendGrid
 if (process.env.SENDGRID_API_KEY) {
@@ -25,14 +28,36 @@ export interface VerificationEmailData {
   verificationUrl: string;
 }
 
+export interface IdeaMatchEmailData {
+  email: string;
+  recipientName?: string;
+  matchData: IdeaMatchData;
+}
+
+export interface WeeklyDigestEmailData {
+  email: string;
+  digestData: WeeklyDigestData;
+}
+
+export interface TeamInvitationEmailData {
+  email: string;
+  recipientName?: string;
+  invitationData: TeamInvitationData;
+}
+
 export class EmailService {
   private static instance: EmailService;
   private readonly fromEmail: string;
   private readonly fromName: string;
 
   private constructor() {
-    this.fromEmail = process.env.SENDGRID_FROM_EMAIL || 'noreply@ideaconnect.com';
-    this.fromName = process.env.SENDGRID_FROM_NAME || 'IdeaConnect Team';
+    this.fromEmail = process.env.SENDGRID_FROM_EMAIL || 'support@ideaconnect.co';
+    this.fromName = process.env.SENDGRID_FROM_NAME || 'IdeaConnect';
+    
+    // Log configuration for debugging
+    console.log('Email service initialized with:');
+    console.log(`From Name: ${this.fromName}`);
+    console.log(`From Email: ${this.fromEmail}`);
   }
 
   public static getInstance(): EmailService {
@@ -60,6 +85,7 @@ export class EmailService {
         text: options.text || this.htmlToText(options.html),
       };
 
+      console.log(`Sending email from: ${this.fromName} <${this.fromEmail}>`);
       await sgMail.send(msg);
       console.log(`Email sent successfully to ${options.to}`);
       return true;
@@ -95,6 +121,39 @@ export class EmailService {
   public async sendVerificationEmail(data: VerificationEmailData): Promise<boolean> {
     const subject = 'Verify Your IdeaConnect Account';
     const html = getVerificationEmailTemplate(data.verificationUrl, data.name);
+
+    return this.sendEmail({
+      to: data.email,
+      subject,
+      html,
+    });
+  }
+
+  public async sendIdeaMatchEmail(data: IdeaMatchEmailData): Promise<boolean> {
+    const subject = `🎯 New Match: ${data.matchData.matcherName} wants to collaborate on ${data.matchData.ideaName}`;
+    const html = getIdeaMatchTemplate(data.matchData, data.recipientName);
+
+    return this.sendEmail({
+      to: data.email,
+      subject,
+      html,
+    });
+  }
+
+  public async sendWeeklyDigestEmail(data: WeeklyDigestEmailData): Promise<boolean> {
+    const subject = `Your Weekly IdeaConnect Digest - ${data.digestData.hotIdeas.length} Hot Ideas & ${data.digestData.potentialMatches.length} Potential Matches`;
+    const html = getWeeklyDigestTemplate(data.digestData);
+
+    return this.sendEmail({
+      to: data.email,
+      subject,
+      html,
+    });
+  }
+
+  public async sendTeamInvitationEmail(data: TeamInvitationEmailData): Promise<boolean> {
+    const subject = `You've been invited to join Team ${data.invitationData.teamName}`;
+    const html = getTeamInvitationTemplate(data.invitationData, data.recipientName);
 
     return this.sendEmail({
       to: data.email,
