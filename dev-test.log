@@ -1,0 +1,74 @@
+
+> ideaconnect@0.1.0 dev
+> next dev
+
+   ▲ Next.js 15.3.5
+   - Local:        http://localhost:3000
+   - Network:      http://10.0.0.25:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 1084ms
+ ✓ Compiled /middleware in 154ms (180 modules)
+ ✓ Compiled /api/emails/send-welcome in 344ms (476 modules)
+Email service initialized with:
+From Name: IdeaConnect
+From Email: support@ideaconnect.co
+=== TEMPLATE DEBUG ===
+Input name: Test User 1
+Template function called at: 2025-07-12T07:25:47.356Z
+NODE_ENV: development
+NEXT_PUBLIC_APP_URL: http://localhost:3000
+Template generated length: 12364
+Template contains body: true
+Template preview: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content
+=== END TEMPLATE DEBUG ===
+Sending email from: IdeaConnect <support@ideaconnect.co>
+Email sent successfully to test1@example.com
+ POST /api/emails/send-welcome 200 in 1092ms
+=== TEMPLATE DEBUG ===
+Input name: Test User 2
+Template function called at: 2025-07-12T07:25:48.200Z
+NODE_ENV: development
+NEXT_PUBLIC_APP_URL: http://localhost:3000
+Template generated length: 12364
+Template contains body: true
+Template preview: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content
+=== END TEMPLATE DEBUG ===
+Sending email from: IdeaConnect <support@ideaconnect.co>
+Email sent successfully to test2@example.com
+ POST /api/emails/send-welcome 200 in 54ms
+=== TEMPLATE DEBUG ===
+Input name: Test User 3
+Template function called at: 2025-07-12T07:25:48.264Z
+NODE_ENV: development
+NEXT_PUBLIC_APP_URL: http://localhost:3000
+Template generated length: 12364
+Template contains body: true
+Template preview: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content
+=== END TEMPLATE DEBUG ===
+Sending email from: IdeaConnect <support@ideaconnect.co>
+Email sent successfully to test3@example.com
+ POST /api/emails/send-welcome 200 in 52ms
+ ✓ Compiled in 74ms (197 modules)
+ ✓ Compiled in 32ms (197 modules)
+ ✓ Compiled in 69ms (459 modules)
+ ✓ Compiled in 64ms (459 modules)
+ ✓ Compiled in 46ms (459 modules)
+ ✓ Compiled in 44ms (459 modules)
+ ✓ Compiled in 38ms (459 modules)
+ ✓ Compiled in 40ms (459 modules)
+ ✓ Compiled in 54ms (459 modules)
+[?25h

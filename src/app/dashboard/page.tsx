@@ -10,7 +10,7 @@ import { Lightbulb, Users, MessageCircle, TrendingUp, ArrowRight, Star, Plus } f
 import { IdeaCard } from '@/components/ideas/IdeaCard'
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<{ id: string; email?: string; user_metadata?: { name?: string } } | null>(null)
   const [loading, setLoading] = useState(true)
   const [userInterestedIdeas, setUserInterestedIdeas] = useState<string[]>(['1', '4'])
   

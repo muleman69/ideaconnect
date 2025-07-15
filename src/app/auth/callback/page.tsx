@@ -1,16 +1,17 @@
-import { NextRequest } from 'next/server'
+// Removed unused NextRequest import
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
 export default async function AuthCallbackPage({
   searchParams,
 }: {
-  searchParams: { code?: string }
+  searchParams: Promise<{ code?: string }>
 }) {
   const supabase = await createClient()
+  const params = await searchParams
 
-  if (searchParams.code) {
-    const { error } = await supabase.auth.exchangeCodeForSession(searchParams.code)
+  if (params.code) {
+    const { error } = await supabase.auth.exchangeCodeForSession(params.code)
     
     if (error) {
       console.error('Error exchanging code for session:', error)

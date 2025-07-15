@@ -1,0 +1,115 @@
+
+> ideaconnect@0.1.0 dev
+> next dev
+
+   ▲ Next.js 15.3.5
+   - Local:        http://localhost:3000
+   - Network:      http://10.0.0.25:3000
+   - Environments: .env.local, .env
+
+ ✓ Starting...
+ ✓ Ready in 955ms
+ ✓ Compiled /middleware in 146ms (180 modules)
+ ✓ Compiled /api/debug-email in 278ms (364 modules)
+=== DEBUG EMAIL ROUTE ===
+Template function exists: function
+HTML generated: true
+HTML length: 12363
+HTML preview: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to IdeaConnect</title>
+    <style>
+    
+ GET /api/debug-email 200 in 348ms
+ ✓ Compiled /api/emails/send-welcome in 202ms (478 modules)
+Email service initialized with:
+From Name: IdeaConnect
+From Email: support@ideaconnect.co
+=== WELCOME EMAIL DEBUG ===
+To: test@example.com
+Name: Test User
+Subject: Welcome to IdeaConnect - Your Journey to Building Something Amazing Starts Now! 🚀
+HTML length: 12362
+HTML preview (first 200 chars): <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to IdeaConnect</title>
+    <style>
+    
+HTML has body: true
+SendGrid API Key set: true
+From email: support@ideaconnect.co
+From name: IdeaConnect
+=== SENDING EMAIL ===
+From: IdeaConnect <support@ideaconnect.co>
+To: test@example.com
+Subject: Welcome to IdeaConnect - Your Journey to Building Something Amazing Starts Now! 🚀
+HTML length: 12362
+Text length: 5478
+SendGrid response: [
+  Response {
+    statusCode: 202,
+    body: '',
+    headers: Object [AxiosHeaders] {
+      server: 'nginx',
+      date: 'Sat, 12 Jul 2025 06:39:57 GMT',
+      'content-length': '0',
+      connection: 'keep-alive',
+      'x-message-id': 'QF-dMUmUT7qVGmF4jpbVOQ',
+      'access-control-allow-origin': 'https://sendgrid.api-docs.io',
+      'access-control-allow-methods': 'POST',
+      'access-control-allow-headers': 'Authorization, Content-Type, On-behalf-of, x-sg-elas-acl',
+      'access-control-max-age': '600',
+      'x-no-cors-reason': 'https://sendgrid.com/docs/Classroom/Basics/API/cors.html',
+      'strict-transport-security': 'max-age=31536000; includeSubDomains',
+      'content-security-policy': "frame-ancestors 'none'",
+      'cache-control': 'no-cache',
+      'x-content-type-options': 'no-sniff',
+      'referrer-policy': 'strict-origin-when-cross-origin'
+    }
+  },
+  ''
+]
+Email sent successfully to test@example.com
+ POST /api/emails/send-welcome 200 in 775ms
+   Reload env: .env.local
+ ✓ Compiled in 86ms (658 modules)
+Email service initialized with:
+From Name: IdeaConnect
+From Email: agaviacabo@gmail.com
+=== WELCOME EMAIL DEBUG ===
+To: agaviacabo@gmail.com
+Name: Test User
+Subject: Welcome to IdeaConnect - Your Journey to Building Something Amazing Starts Now! 🚀
+HTML length: 12362
+HTML preview (first 200 chars): <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to IdeaConnect</title>
+    <style>
+    
+HTML has body: true
+SendGrid API Key set: true
+From email: agaviacabo@gmail.com
+From name: IdeaConnect
+=== SENDING EMAIL ===
+From: IdeaConnect <agaviacabo@gmail.com>
+To: agaviacabo@gmail.com
+Subject: Welcome to IdeaConnect - Your Journey to Building Something Amazing Starts Now! 🚀
+HTML length: 12362
+Text length: 5478
+Error sending email: [Error: Forbidden] { code: 403, response: [Object] }
+ POST /api/emails/send-welcome 500 in 367ms
+ ✓ Compiled in 52ms (199 modules)
+ ✓ Compiled in 33ms (197 modules)
+ ✓ Compiled in 33ms (197 modules)
+   Reload env: .env.local
+ ✓ Compiled in 54ms (459 modules)
+[?25h

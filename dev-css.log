@@ -1,0 +1,97 @@
+
+> ideaconnect@0.1.0 dev
+> next dev
+
+   ▲ Next.js 15.3.5
+   - Local:        http://localhost:3000
+   - Network:      http://10.0.0.25:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 948ms
+ ✓ Compiled /middleware in 108ms (180 modules)
+ ✓ Compiled / in 484ms (998 modules)
+ GET / 200 in 653ms
+ GET / 200 in 39ms
+ ✓ Compiled /favicon.ico in 97ms (595 modules)
+ GET /favicon.ico 200 in 150ms
+ GET /favicon.ico 200 in 4ms
+ ✓ Compiled /api/ideas in 415ms (1361 modules)
+Error fetching ideas: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.idea.findMany()` invocation:
+
+
+The column `interests.interestLevel` does not exist in the current database.
+    at async GET (src/app/api/ideas/route.ts:18:18)
+  16 |     if (featured) where.isFeatured = true;
+  17 |
+> 18 |     const ideas = await prisma.idea.findMany({
+     |                  ^
+  19 |       where,
+  20 |       include: {
+  21 |         author: { {
+  code: 'P2022',
+  meta: [Object],
+  clientVersion: '6.11.1'
+}
+ GET /api/ideas?limit=6 500 in 751ms
+Error getting featured idea: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.idea.findFirst()` invocation:
+
+
+The column `interests.interestLevel` does not exist in the current database.
+    at async IdeaBrowserSync.getFeaturedIdea (src/lib/ideabrowser-sync.ts:650:27)
+    at async GET (src/app/api/ideas/featured/route.ts:6:25)
+  648 |   public static async getFeaturedIdea() {
+  649 |     try {
+> 650 |       const featuredIdea = await prisma.idea.findFirst({
+      |                           ^
+  651 |         where: { isFeatured: true },
+  652 |         include: {
+  653 |           interests: { {
+  code: 'P2022',
+  meta: [Object],
+  clientVersion: '6.11.1'
+}
+ GET /api/ideas/featured 404 in 949ms
+ ✓ Compiled /_not-found in 207ms (1123 modules)
+ GET /api/ideas?limit=6 404 in 333ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/jjresnick/Documents/Projects/ideaconnect/.next/server/app/api/ideas/route.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/jjresnick/Documents/Projects/ideaconnect/.next/server/app/api/ideas/route.js',
+  page: '/api/ideas'
+}
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 589ms (1457 modules)
+ GET /api/ideas?limit=6 500 in 941ms
+ ✓ Compiled /api/ideas/featured in 73ms (1027 modules)
+Error getting featured idea: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.idea.findFirst()` invocation:
+
+
+The table `public.idea_discussions` does not exist in the current database.
+    at async IdeaBrowserSync.getFeaturedIdea (src/lib/ideabrowser-sync.ts:650:27)
+    at async GET (src/app/api/ideas/featured/route.ts:6:25)
+  648 |   public static async getFeaturedIdea() {
+  649 |     try {
+> 650 |       const featuredIdea = await prisma.idea.findFirst({
+      |                           ^
+  651 |         where: { isFeatured: true },
+  652 |         include: {
+  653 |           interests: { {
+  code: 'P2021',
+  meta: [Object],
+  clientVersion: '6.11.1'
+}
+ GET /api/ideas/featured 404 in 463ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/jjresnick/Documents/Projects/ideaconnect/.next/server/app/api/ideas/route.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/jjresnick/Documents/Projects/ideaconnect/.next/server/app/api/ideas/route.js',
+  page: '/api/ideas'
+}
+ GET /api/ideas?limit=6 500 in 246ms
+[?25h

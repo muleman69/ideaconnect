@@ -5,15 +5,15 @@ export interface ApiError {
   message: string;
   code?: string;
   statusCode: number;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
 }
 
 export class AppError extends Error {
   public readonly statusCode: number;
   public readonly code?: string;
-  public readonly context?: Record<string, any>;
+  public readonly context?: Record<string, unknown>;
 
-  constructor(message: string, statusCode: number = 500, code?: string, context?: Record<string, any>) {
+  constructor(message: string, statusCode: number = 500, code?: string, context?: Record<string, unknown>) {
     super(message);
     this.statusCode = statusCode;
     this.code = code;
@@ -53,7 +53,7 @@ export function handleApiError(error: unknown, operation: string): NextResponse 
 }
 
 // Validation helpers
-export function validateRequiredFields(data: Record<string, any>, requiredFields: string[]) {
+export function validateRequiredFields(data: Record<string, unknown>, requiredFields: string[]) {
   const missingFields = requiredFields.filter(field => !data[field]);
   
   if (missingFields.length > 0) {

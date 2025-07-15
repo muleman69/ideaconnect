@@ -61,14 +61,14 @@ async function getIdeas(): Promise<Idea[]> {
       take: 20
     });
 
-    return ideas.map((idea: any) => ({
+    return ideas.map((idea) => ({
       id: idea.id,
       title: idea.title,
       description: idea.description,
       category: idea.category,
-      difficultyLevel: idea.difficultyLevel,
-      marketSize: idea.marketSize,
-      sourceUrl: idea.sourceUrl,
+      difficultyLevel: idea.difficultyLevel ?? undefined,
+      marketSize: idea.marketSize ?? undefined,
+      sourceUrl: idea.sourceUrl ?? undefined,
       featuredDate: idea.featuredDate ? new Date(idea.featuredDate) : undefined,
       isFeatured: idea.isFeatured,
       interestCount: idea._count?.interests || 0,
