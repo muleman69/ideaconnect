@@ -511,10 +511,37 @@ export class IdeaBrowserSync {
       allIdeas.push(...patternIdeas);
       console.log(`✓ Got ${patternIdeas.length} ideas from patterns`);
       
-      // Remove duplicates based on title
-      const uniqueIdeas = allIdeas.filter((idea, index, self) => 
-        index === self.findIndex(i => i.title === idea.title)
-      );
+      // Filter out error messages and invalid content
+      const validIdeas = allIdeas.filter(idea => {
+        // Filter out error messages from IdeaBrowser.com
+        if (idea.title.toLowerCase().includes('unlock the full idea report') ||
+            idea.title.toLowerCase().includes('access window has expired') ||
+            idea.description.toLowerCase().includes('24-hour access window has expired') ||
+            idea.description.toLowerCase().includes('upgrade to access this idea')) {
+          console.log(`Filtered out error message: ${idea.title}`);
+          return false;
+        }
+        
+        // Filter out generic/invalid titles
+        if (idea.title === 'Idea of the Day' && idea.description.length < 100) {
+          console.log(`Filtered out generic title with short description: ${idea.title}`);
+          return false;
+        }
+        
+        return true;
+      });
+      
+      // Remove duplicates based on both title AND description content
+      const uniqueIdeas = validIdeas.filter((idea, index, self) => {
+        // Find if there's any previous idea with same title OR same description (first 200 chars)
+        const duplicateIndex = self.findIndex(i => 
+          i.title === idea.title || 
+          i.description.substring(0, 200) === idea.description.substring(0, 200)
+        );
+        
+        // Keep only the first occurrence (which will be the best one from Strategy 1)
+        return duplicateIndex === index;
+      });
       
       console.log(`Successfully scraped ${uniqueIdeas.length} unique ideas from IdeaBrowser.com`);
       return uniqueIdeas;

@@ -40,6 +40,7 @@ export default function FeaturedIdea() {
   const [idea, setIdea] = useState<FeaturedIdeaData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showFullDescription, setShowFullDescription] = useState(false);
 
   useEffect(() => {
     fetchFeaturedIdea();
@@ -58,6 +59,11 @@ export default function FeaturedIdea() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const truncateText = (text: string, maxLength: number = 200) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength).trim() + '...';
   };
 
   if (loading) {
@@ -96,6 +102,9 @@ export default function FeaturedIdea() {
     if (level <= 6) return 'Medium';
     return 'Hard';
   };
+
+  const shouldTruncate = idea.description.length > 200;
+  const displayDescription = showFullDescription ? idea.description : truncateText(idea.description);
 
   return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -161,9 +170,19 @@ export default function FeaturedIdea() {
           )}
         </div>
 
-        <p className="text-gray-700 mb-6 leading-relaxed">
-          {idea.description}
-        </p>
+        <div className="mb-6">
+          <p className="text-gray-700 leading-relaxed">
+            {displayDescription}
+          </p>
+          {shouldTruncate && (
+            <button
+              onClick={() => setShowFullDescription(!showFullDescription)}
+              className="text-blue-600 hover:text-blue-800 font-medium text-sm mt-2 transition-colors"
+            >
+              {showFullDescription ? 'Show Less' : 'Read More'}
+            </button>
+          )}
+        </div>
 
         <div className="flex items-center justify-between">
           <div className="flex -space-x-2">

@@ -56,6 +56,11 @@ export function IdeaCard({
     }
   }
 
+  const truncateText = (text: string, maxLength: number = 150) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength).trim() + '...';
+  };
+
   const cardClassName = variant === 'featured' 
     ? "border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10" 
     : variant === 'compact'
@@ -88,7 +93,7 @@ export function IdeaCard({
             </CardTitle>
             {variant !== 'compact' && (
               <CardDescription className="mt-2">
-                {idea.description}
+                {truncateText(idea.description)}
               </CardDescription>
             )}
           </div>
@@ -105,7 +110,7 @@ export function IdeaCard({
       <CardContent className={variant === 'compact' ? 'pt-0' : ''}>
         {variant === 'compact' && idea.description && (
           <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-            {idea.description}
+            {truncateText(idea.description, 100)}
           </p>
         )}
         
