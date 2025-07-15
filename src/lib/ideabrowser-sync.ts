@@ -1,5 +1,6 @@
 import { prisma } from './prisma';
 import * as cheerio from 'cheerio';
+import { logger } from './logger';
 
 export interface IdeaBrowserIdea {
   id: string;
@@ -31,7 +32,7 @@ export class IdeaBrowserSync {
   private static async fetchDatabasePage(page: number): Promise<Partial<IdeaBrowserIdea>[]> {
     try {
       const url = `${this.IDEABROWSER_BASE_URL}/database?page=${page}`;
-      console.log(`Fetching page ${page} from IdeaBrowser database...`);
+      logger.info(`Fetching page ${page} from IdeaBrowser database`);
       
       const response = await fetch(url, {
         headers: {
@@ -242,9 +243,72 @@ export class IdeaBrowserSync {
       const html = await response.text();
       const $ = cheerio.load(html);
       
-      // Extract the main idea content
-      const title = $('h1, h2, .title, .idea-title').first().text().trim();
-      const description = $('p, .description, .content').first().text().trim();
+      // Extract the main idea content with better filtering
+      let title = '';
+      
+      // Try h1 elements first, but skip generic ones
+      $('h1').each((i, el) => {
+        const text = $(el).text().trim();
+        if (text && 
+            text !== 'Idea of the Day' && 
+            text !== 'IdeaBrowser' &&
+            text !== 'Daily Idea' &&
+            !text.toLowerCase().includes('welcome') &&
+            text.length > 10) {
+          title = text;
+          return false; // Break out of loop
+        }
+      });
+      
+      // If no good h1, try h2 elements
+      if (!title) {
+        $('h2').each((i, el) => {
+          const text = $(el).text().trim();
+          if (text && 
+              text !== 'Idea of the Day' && 
+              text !== 'IdeaBrowser' &&
+              text !== 'Daily Idea' &&
+              !text.toLowerCase().includes('welcome') &&
+              text.length > 10) {
+            title = text;
+            return false; // Break out of loop
+          }
+        });
+      }
+      
+      // Fallback to other selectors
+      if (!title) {
+        $('.title, .idea-title, .main-title').each((i, el) => {
+          const text = $(el).text().trim();
+          if (text && 
+              text !== 'Idea of the Day' && 
+              text.length > 10) {
+            title = text;
+            return false; // Break out of loop
+          }
+        });
+      }
+      
+      // Extract description with better targeting
+      let description = '';
+      
+      // Try to find the main description paragraph
+      $('p').each((i, el) => {
+        const text = $(el).text().trim();
+        if (text && 
+            text.length > 50 && // Longer descriptions are better
+            !text.toLowerCase().includes('welcome') &&
+            !text.toLowerCase().includes('sign up') &&
+            !text.toLowerCase().includes('login')) {
+          description = text;
+          return false; // Break out of loop
+        }
+      });
+      
+      // Fallback to first substantial paragraph
+      if (!description) {
+        description = $('p').first().text().trim();
+      }
       const url = response.url;
       
       // Extract metadata
@@ -254,7 +318,8 @@ export class IdeaBrowserSync {
       const marketSize = this.extractMarketSize($);
       const difficultyLevel = this.extractDifficultyLevel($);
       
-      if (title && description) {
+      if (title && description && title !== 'Idea of the Day') {
+        console.log(`✓ Got current Idea of the Day: ${title}`);
         return {
           id: `idea-of-the-day-${new Date().toISOString().split('T')[0]}`,
           title,
@@ -572,7 +637,49 @@ export class IdeaBrowserSync {
         data: { isFeatured: false }
       });
       
-      // Get ideas with high engagement (interests + discussions)
+      const today = new Date().toISOString().split('T')[0];
+      
+      // First priority: Today's Idea of the Day
+      const todaysIdea = await prisma.idea.findFirst({
+        where: {
+          sourceId: `idea-of-the-day-${today}`,
+        }
+      });
+      
+      if (todaysIdea) {
+        await prisma.idea.update({
+          where: { id: todaysIdea.id },
+          data: { isFeatured: true }
+        });
+        console.log(`Featured idea set: ${todaysIdea.title}`);
+        return;
+      }
+      
+      // Second priority: Any recent Idea of the Day (last 3 days)
+      const recentIdeaOfTheDay = await prisma.idea.findFirst({
+        where: {
+          sourceId: {
+            startsWith: 'idea-of-the-day-'
+          },
+          syncedAt: {
+            gte: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) // Last 3 days
+          }
+        },
+        orderBy: {
+          syncedAt: 'desc'
+        }
+      });
+      
+      if (recentIdeaOfTheDay) {
+        await prisma.idea.update({
+          where: { id: recentIdeaOfTheDay.id },
+          data: { isFeatured: true }
+        });
+        console.log(`Featured idea set: ${recentIdeaOfTheDay.title}`);
+        return;
+      }
+      
+      // Fallback: Use engagement scoring for other ideas
       const ideasWithEngagement = await prisma.idea.findMany({
         include: {
           _count: {
@@ -601,7 +708,7 @@ export class IdeaBrowserSync {
         }
       }
       
-      // If no ideas have engagement, pick a random recent one
+      // If no ideas have engagement, pick the most recent one
       if (!featuredIdea) {
         const recentIdeas = await prisma.idea.findMany({
           where: {
@@ -617,26 +724,23 @@ export class IdeaBrowserSync {
               }
             }
           },
-          take: 10
+          orderBy: {
+            syncedAt: 'desc'
+          },
+          take: 1
         });
         
-        if (recentIdeas.length > 0) {
-          featuredIdea = recentIdeas[Math.floor(Math.random() * recentIdeas.length)];
-        }
+        featuredIdea = recentIdeas[0];
       }
       
-      // Set featured idea
       if (featuredIdea) {
         await prisma.idea.update({
           where: { id: featuredIdea.id },
-          data: { 
-            isFeatured: true,
-            featuredDate: new Date()
-          }
+          data: { isFeatured: true }
         });
-        
         console.log(`Featured idea set: ${featuredIdea.title}`);
       }
+      
     } catch (error) {
       console.error('Error updating featured idea:', error);
     }

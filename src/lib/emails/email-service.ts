@@ -4,6 +4,7 @@ import { getVerificationEmailTemplate } from './verification-template';
 import { getIdeaMatchTemplate, type IdeaMatchData } from './idea-match-template';
 import { getWeeklyDigestTemplate, type WeeklyDigestData } from './weekly-digest-template';
 import { getTeamInvitationTemplate, type TeamInvitationData } from './team-invitation-template';
+import { logger } from '@/lib/logger';
 
 // Initialize SendGrid
 if (process.env.SENDGRID_API_KEY) {
@@ -55,9 +56,10 @@ export class EmailService {
     this.fromName = process.env.SENDGRID_FROM_NAME || 'IdeaConnect';
     
     // Log configuration for debugging
-    console.log('Email service initialized with:');
-    console.log(`From Name: ${this.fromName}`);
-    console.log(`From Email: ${this.fromEmail}`);
+    logger.info('Email service initialized', {
+      fromName: this.fromName,
+      fromEmail: this.fromEmail
+    });
   }
 
   public static getInstance(): EmailService {
@@ -70,7 +72,7 @@ export class EmailService {
   private async sendEmail(options: EmailOptions): Promise<boolean> {
     try {
       if (!process.env.SENDGRID_API_KEY) {
-        console.warn('SendGrid API key not configured - email not sent');
+        logger.warn('SendGrid API key not configured - email not sent');
         return false;
       }
 
@@ -85,12 +87,16 @@ export class EmailService {
         text: options.text || this.htmlToText(options.html),
       };
 
-      console.log(`Sending email from: ${this.fromName} <${this.fromEmail}>`);
+      logger.info('Sending email', { 
+        to: options.to, 
+        subject: options.subject,
+        from: `${this.fromName} <${this.fromEmail}>` 
+      });
       await sgMail.send(msg);
-      console.log(`Email sent successfully to ${options.to}`);
+      logger.info(`Email sent successfully to ${options.to}`);
       return true;
     } catch (error) {
-      console.error('Error sending email:', error);
+      logger.error('Error sending email', error as Error);
       return false;
     }
   }
@@ -109,7 +115,7 @@ export class EmailService {
 
   public async sendWelcomeEmail(data: WelcomeEmailData): Promise<boolean> {
     const subject = 'Welcome to IdeaConnect - Your Journey to Building Something Amazing Starts Now! 🚀';
-    const html = getWelcomeEmailTemplate(data.name);
+    const html = getWelcomeEmailTemplate(data.name || 'there');
 
     return this.sendEmail({
       to: data.email,

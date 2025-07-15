@@ -39,7 +39,10 @@ export const updateSession = async (request: NextRequest) => {
   const protectedRoutes = ['/dashboard', '/profile', '/messages', '/ideas/create']
   const isProtectedRoute = protectedRoutes.some(route => request.nextUrl.pathname.startsWith(route))
   
-  if (!user && isProtectedRoute) {
+  // Allow auth confirmation route to be accessed without authentication
+  const isAuthRoute = request.nextUrl.pathname.startsWith('/auth/')
+  
+  if (!user && isProtectedRoute && !isAuthRoute) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)

@@ -1,178 +1,172 @@
 'use client';
 
-import Link from 'next/link';
-import { Heart, MessageCircle, Users, ExternalLink } from 'lucide-react';
-
-interface User {
-  id: string;
-  name: string;
-  imageUrl: string;
-}
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Heart, MessageCircle, Users, ExternalLink, Calendar } from 'lucide-react'
 
 interface IdeaCardProps {
   idea: {
-    id: string;
-    title: string;
-    description: string;
-    category: string;
-    sourceUrl?: string;
-    difficultyLevel?: number;
-    marketSize?: string;
-    author?: User;
-    interests: {
-      user: User;
-    }[];
-    _count: {
-      interests: number;
-      discussions: number;
-      teams: number;
-    };
-  };
+    id: string
+    title: string
+    description: string
+    category: string
+    difficultyLevel?: number
+    marketSize?: string
+    sourceUrl?: string
+    featuredDate?: Date | string
+    isFeatured?: boolean
+    interestCount?: number
+    discussionCount?: number
+    teamCount?: number
+    createdAt: Date | string
+  }
+  variant?: 'default' | 'featured' | 'compact'
+  showActions?: boolean
+  onInterestToggle?: (ideaId: string) => void
+  isInterested?: boolean
 }
 
-export default function IdeaCard({ idea }: IdeaCardProps) {
-  const getDifficultyColor = (level?: number) => {
-    if (!level) return 'bg-gray-100 text-gray-800';
-    if (level <= 3) return 'bg-green-100 text-green-800';
-    if (level <= 6) return 'bg-yellow-100 text-yellow-800';
-    return 'bg-red-100 text-red-800';
-  };
+const difficultyLabels = {
+  1: 'Easy',
+  2: 'Medium', 
+  3: 'Hard',
+  4: 'Expert',
+  5: 'Extreme'
+}
 
-  const getDifficultyText = (level?: number) => {
-    if (!level) return 'Unknown';
-    if (level <= 3) return 'Easy';
-    if (level <= 6) return 'Medium';
-    return 'Hard';
-  };
+const difficultyColors = {
+  1: 'bg-green-100 text-green-800',
+  2: 'bg-blue-100 text-blue-800', 
+  3: 'bg-yellow-100 text-yellow-800',
+  4: 'bg-orange-100 text-orange-800',
+  5: 'bg-red-100 text-red-800'
+}
+
+export function IdeaCard({ 
+  idea, 
+  variant = 'default', 
+  showActions = true,
+  onInterestToggle,
+  isInterested = false 
+}: IdeaCardProps) {
+  const handleInterestClick = () => {
+    if (onInterestToggle) {
+      onInterestToggle(idea.id)
+    }
+  }
+
+  const cardClassName = variant === 'featured' 
+    ? "border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10" 
+    : variant === 'compact'
+    ? "hover:shadow-md transition-shadow"
+    : "hover:shadow-md transition-shadow"
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-      <div className="p-6">
-        <div className="flex items-start justify-between mb-4">
+    <Card className={cardClassName}>
+      <CardHeader className={variant === 'compact' ? 'pb-3' : ''}>
+        <div className="flex items-start justify-between">
           <div className="flex-1">
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              <Link 
-                href={`/ideas/${idea.id}`}
-                className="hover:text-blue-600 transition-colors"
-              >
-                {idea.title}
-              </Link>
-            </h3>
-            <div className="flex items-center gap-2 mb-3">
-              <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
-                {idea.category}
-              </span>
+            <div className="flex items-center gap-2 mb-2">
+              <Badge variant="outline">{idea.category}</Badge>
               {idea.difficultyLevel && (
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(idea.difficultyLevel)}`}>
-                  {getDifficultyText(idea.difficultyLevel)}
-                </span>
+                <Badge 
+                  variant="secondary" 
+                  className={difficultyColors[idea.difficultyLevel as keyof typeof difficultyColors]}
+                >
+                  {difficultyLabels[idea.difficultyLevel as keyof typeof difficultyLabels]}
+                </Badge>
               )}
-              {idea.marketSize && (
-                <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
-                  {idea.marketSize}
-                </span>
+              {idea.isFeatured && (
+                <Badge variant="default" className="bg-yellow-500 hover:bg-yellow-600">
+                  ⭐ Featured
+                </Badge>
               )}
             </div>
+            <CardTitle className={variant === 'compact' ? 'text-lg' : 'text-xl'}>
+              {idea.title}
+            </CardTitle>
+            {variant !== 'compact' && (
+              <CardDescription className="mt-2">
+                {idea.description}
+              </CardDescription>
+            )}
           </div>
           {idea.sourceUrl && (
-            <a
-              href={idea.sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors"
-            >
-              <ExternalLink className="h-4 w-4" />
-            </a>
+            <Button variant="ghost" size="icon" asChild>
+              <a href={idea.sourceUrl} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="h-4 w-4" />
+              </a>
+            </Button>
+          )}
+        </div>
+      </CardHeader>
+      
+      <CardContent className={variant === 'compact' ? 'pt-0' : ''}>
+        {variant === 'compact' && idea.description && (
+          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+            {idea.description}
+          </p>
+        )}
+        
+        {/* Metadata */}
+        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+          {idea.marketSize && (
+            <div className="flex items-center gap-1">
+              <span>Market: {idea.marketSize}</span>
+            </div>
+          )}
+          {idea.featuredDate && (
+            <div className="flex items-center gap-1">
+              <Calendar className="h-3 w-3" />
+              <span>
+                {typeof idea.featuredDate === 'string' 
+                  ? new Date(idea.featuredDate).toLocaleDateString()
+                  : idea.featuredDate.toLocaleDateString()
+                }
+              </span>
+            </div>
           )}
         </div>
 
-        <p className="text-gray-700 mb-4 line-clamp-3">
-          {idea.description}
-        </p>
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4 text-sm text-gray-500">
-            <div className="flex items-center gap-1">
-              <Heart className="h-4 w-4" />
-              <span>{idea._count.interests}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <MessageCircle className="h-4 w-4" />
-              <span>{idea._count.discussions}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Users className="h-4 w-4" />
-              <span>{idea._count.teams}</span>
-            </div>
+        {/* Stats */}
+        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+          <div className="flex items-center gap-1">
+            <Heart className="h-4 w-4" />
+            <span>{idea.interestCount || 0} interested</span>
           </div>
-
-          <div className="flex items-center gap-3">
-            {idea.interests.length > 0 && (
-              <div className="flex -space-x-1">
-                {idea.interests.slice(0, 3).map((interest) => (
-                  <div
-                    key={interest.user.id}
-                    className="relative w-6 h-6 rounded-full overflow-hidden border-2 border-white"
-                  >
-                    {interest.user.imageUrl ? (
-                      <img
-                        src={interest.user.imageUrl}
-                        alt={interest.user.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gray-300 flex items-center justify-center">
-                        <span className="text-xs font-medium text-gray-600">
-                          {interest.user.name[0]}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                ))}
-                {idea.interests.length > 3 && (
-                  <div className="relative w-6 h-6 rounded-full bg-gray-100 border-2 border-white flex items-center justify-center">
-                    <span className="text-xs font-medium text-gray-600">
-                      +{idea.interests.length - 3}
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
-            
-            <Link
-              href={`/ideas/${idea.id}`}
-              className="bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-md text-sm font-medium transition-colors"
-            >
-              View Details
-            </Link>
+          <div className="flex items-center gap-1">
+            <MessageCircle className="h-4 w-4" />
+            <span>{idea.discussionCount || 0} discussions</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Users className="h-4 w-4" />
+            <span>{idea.teamCount || 0} teams</span>
           </div>
         </div>
 
-        {idea.author && (
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full overflow-hidden">
-                {idea.author.imageUrl ? (
-                  <img
-                    src={idea.author.imageUrl}
-                    alt={idea.author.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gray-300 flex items-center justify-center">
-                    <span className="text-xs font-medium text-gray-600">
-                      {idea.author.name[0]}
-                    </span>
-                  </div>
-                )}
-              </div>
-              <span className="text-sm text-gray-600">
-                Created by {idea.author.name}
-              </span>
-            </div>
+        {/* Actions */}
+        {showActions && (
+          <div className="flex gap-2">
+            <Button 
+              variant={isInterested ? "default" : "outline"}
+              size="sm"
+              onClick={handleInterestClick}
+              className="flex-1"
+            >
+              <Heart className={`h-4 w-4 mr-2 ${isInterested ? 'fill-current' : ''}`} />
+              {isInterested ? 'Interested' : 'Show Interest'}
+            </Button>
+            <Button variant="outline" size="sm" asChild>
+              <a href={`/ideas/${idea.id}`}>
+                View Details
+              </a>
+            </Button>
           </div>
         )}
-      </div>
-    </div>
-  );
+      </CardContent>
+    </Card>
+  )
 }
+
+export default IdeaCard
