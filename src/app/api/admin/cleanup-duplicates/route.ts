@@ -2,8 +2,27 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
 
+// Simple rate limiting - track last cleanup time
+let lastCleanupTime: number | undefined;
+
 export async function POST() {
   try {
+    // Simple rate limiting - only allow cleanup every 5 minutes
+    const now = Date.now();
+    const fiveMinutesAgo = now - (5 * 60 * 1000);
+    
+    if (lastCleanupTime && lastCleanupTime > fiveMinutesAgo) {
+      const waitTime = Math.ceil((lastCleanupTime + (5 * 60 * 1000) - now) / 1000);
+      return NextResponse.json(
+        { 
+          error: `Rate limited. Try again in ${waitTime} seconds.`,
+          retryAfter: waitTime 
+        },
+        { status: 429 }
+      );
+    }
+    
+    lastCleanupTime = now;
     logger.info('Starting manual duplicate cleanup');
     
     // Find ideas with duplicate titles (case insensitive)
