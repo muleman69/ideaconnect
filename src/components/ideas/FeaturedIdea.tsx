@@ -53,7 +53,14 @@ export default function FeaturedIdea() {
         throw new Error('Failed to fetch featured idea');
       }
       const data = await response.json();
-      setIdea(data.idea);
+      
+      // Handle empty database gracefully
+      if (data.isEmpty) {
+        setIdea(null);
+        setError(data.message || 'No ideas available yet. Check back soon!');
+      } else {
+        setIdea(data.idea);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -80,11 +87,35 @@ export default function FeaturedIdea() {
 
   if (error || !idea) {
     return (
-      <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Today&apos;s Idea</h2>
-        <p className="text-gray-600">
-          {error || 'No featured idea available today. Check back later!'}
-        </p>
+      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-gradient-to-r from-blue-500 to-purple-600 px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-2">Today&apos;s Idea</h2>
+              <p className="text-blue-100">
+                Discover, discuss, and collaborate on innovative concepts
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="p-8 text-center">
+          <div className="max-w-md mx-auto">
+            <div className="mb-4">
+              <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                <Heart className="h-8 w-8 text-gray-400" />
+              </div>
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              Ideas Coming Soon!
+            </h3>
+            <p className="text-gray-600 mb-4">
+              {error || 'We\'re syncing fresh startup ideas from IdeaBrowser.com. Check back in a few minutes for exciting new opportunities!'}
+            </p>
+            <div className="text-sm text-gray-500">
+              💡 Ideas sync automatically every day at 9 AM UTC
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

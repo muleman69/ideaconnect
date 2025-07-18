@@ -51,8 +51,14 @@ export default function RecentIdeas() {
       }
       const data = await response.json();
       
-      setIdeas(data.ideas || []);
-      setError(null);
+      // Handle empty database gracefully
+      if (data.isEmpty) {
+        setIdeas([]);
+        setError(data.message || 'No ideas available yet. Check back soon!');
+      } else {
+        setIdeas(data.ideas || []);
+        setError(null);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -101,13 +107,26 @@ export default function RecentIdeas() {
           </Link>
         </div>
         <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-          <p className="text-gray-600 mb-4">{error}</p>
-          <button 
-            onClick={fetchRecentIdeas}
-            className="bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-md font-medium transition-colors"
-          >
-            Try Again
-          </button>
+          <div className="max-w-md mx-auto">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+              <svg className="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Loading Ideas...
+            </h3>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <div className="text-sm text-gray-500 mb-4">
+              💡 Ideas sync automatically every day at 9 AM UTC
+            </div>
+            <button 
+              onClick={fetchRecentIdeas}
+              className="bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-md font-medium transition-colors text-sm"
+            >
+              Refresh
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -127,13 +146,22 @@ export default function RecentIdeas() {
       
       {ideas.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-          <p className="text-gray-600 mb-4">No ideas available yet.</p>
-          <Link
-            href="/api/sync/ideabrowser"
-            className="bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-md font-medium transition-colors"
-          >
-            Sync Ideas
-          </Link>
+          <div className="max-w-md mx-auto">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+              <svg className="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Fresh Ideas Loading...
+            </h3>
+            <p className="text-gray-600 mb-4">
+              We're syncing the latest startup ideas from IdeaBrowser.com. Check back in a few minutes!
+            </p>
+            <div className="text-sm text-gray-500">
+              💡 Ideas sync automatically every day at 9 AM UTC
+            </div>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -54,8 +54,24 @@ export async function GET(request: NextRequest) {
 
     const total = await prisma.idea.count({ where });
 
+    // Handle empty database gracefully
+    if (total === 0) {
+      return NextResponse.json({
+        ideas: [],
+        isEmpty: true,
+        message: 'No ideas have been synced yet. The daily sync will populate content automatically.',
+        pagination: {
+          page,
+          limit,
+          total: 0,
+          pages: 0
+        }
+      });
+    }
+
     return NextResponse.json({
       ideas,
+      isEmpty: false,
       pagination: {
         page,
         limit,
@@ -66,7 +82,11 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching ideas:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch ideas' },
+      { 
+        error: 'Failed to fetch ideas',
+        isEmpty: true,
+        message: 'There was an error loading ideas. Please try again later.'
+      },
       { status: 500 }
     );
   }

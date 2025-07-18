@@ -1,0 +1,162 @@
+---
+description: Apply these rules when making changes to the project
+globs:
+alwaysApply: true
+---
+
+Update this rule if user requested changes to the project requirement, etc.
+## Project Overview
+
+*   **Type:** cursor_project_rules
+*   **Description:** The IdeaConnect project aims to build a collaborative platform for entrepreneurs. Its primary goal is to facilitate the discovery of startup ideas, specifically by integrating with IdeaBrowser.com, and enable users to find co-founders and build ventures around these ideas.
+*   **Primary Goal:** Evolve IdeaConnect into a comprehensive, idea-centric collaboration platform by automating daily idea synchronization from IdeaBrowser.com and providing intuitive interest signaling, discussion spaces, and team formation workflows.
+
+## Project Structure
+
+### Framework-Specific Routing
+
+*   **Directory Rules:**
+
+    *   Next.js 13+ (App Router): Use `app/[route]/page.tsx` for pages; `app/api/[route]/route.ts` for API handlers; co-locate `layout.tsx` and `loading.tsx` in nested folders.
+    *   Next.js Legacy (Pages Router): Use `pages/[route].tsx` for pages; `pages/api/[route].ts` for APIs; flat structure under `pages/`.
+    *   React Router 6: Organize route definitions in `src/routes/`; initialize with `createBrowserRouter` in `src/app.tsx`.
+
+### Core Directories
+
+*   **Versioned Structure:**
+
+    *   `app`: Next.js 13 App Router directory housing page components, layouts, and loading states.
+    *   `app/api`: Next.js 13 Route Handlers for application APIs (sync, auth, emails).
+    *   `src/components`: Reusable UI components built with Shadcn/UI, Lucide React, React Hook Form, and Zod.
+    *   `prisma`: Prisma ORM schema (`schema.prisma`) and migration files defining User, Idea, Interest, Discussion, and Team models.
+    *   `src/lib`: Utility modules (Supabase client, cron job functions, zod schemas).
+    *   `scripts`: Cron scripts for daily idea synchronization and weekly digest tasks.
+    *   `public`: Static assets (images, icons).
+
+### Key Files
+
+*   **Stack-Versioned Patterns:**
+
+    *   `app/layout.tsx`: Next.js 13 root layout with global providers (Supabase, Theme).
+    *   `app/page.tsx`: Home page showcasing “Today’s Idea.”
+    *   `app/auth/login/page.tsx`: Login page using Next.js server actions and Supabase Auth.
+    *   `app/api/sync/ideabrowser/route.ts`: Route handler for manual and scheduled idea sync.
+    *   `prisma/schema.prisma`: Database schema for all core models.
+    *   `tailwind.config.js`: Tailwind CSS configuration (JIT mode, purge paths).
+    *   `next.config.js`: Next.js configuration enforcing App Router and environmental rules.
+    *   `src/app.d.ts`: Global TypeScript definitions and Zod schema inferences.
+
+## Tech Stack Rules
+
+*   **Version Enforcement:**
+
+    *   `next@13+`: App Router mandatory; no `pages/` directory; use server components by default.
+    *   `typescript@>=4.5`: `strict` mode enabled; `noImplicitAny`, `strictNullChecks` on.
+    *   `tailwindcss@3.x`: JIT mode; purge content in `app/**/*.{ts,tsx}` and `src/components/**/*.{ts,tsx}`.
+    *   `prisma@4.x`: All schema changes via `prisma migrate`; no manual SQL edits.
+    *   `@supabase/auth@1.x`: Use Supabase Auth client for all auth flows; protect API routes with `auth.getUser()`.
+    *   `@shadcn/ui@latest`: Build UI with pre-built components; no custom CSS overrides.
+    *   `@lucide/react@0.x`: Import only used icons; ensure `aria-label` on icon components.
+    *   `react-hook-form@7.x` & `zod@3.x`: Integrate Zod schemas via RHF resolver; no uncontrolled inputs.
+    *   `resend@1.x` or `nodemailer@6.x`: Use for all transactional emails; include unsubscribe tokens.
+    *   `vercel@latest`: Deployment and cron jobs configured in `vercel.json`.
+    *   `cursor & claude code`: Development tools only; not included in production dependencies.
+
+## PRD Compliance
+
+*   **Non-Negotiable:**
+
+    *   "Automated daily synchronization of ideas from IdeaBrowser.com (via API or scraping)": Must implement robust retry, deduplication, logging, and admin dashboard under `app/api/sync/ideabrowser/route.ts`.
+    *   "One-click “Raise Hand” interest mechanism": UI button in `app/ideas/[id]/page.tsx` and corresponding `POST /api/ideas/[id]/interest` endpoint supporting express/withdraw operations.
+    *   "Threaded discussion pages with rich-text editor": Must support nested comments in `app/ideas/[id]/discussions/page.tsx` with real-time updates via SSE or WebSockets.
+    *   "Team formation wizard once an idea hits a configurable interest threshold": Configurable via ENV; pages under `app/ideas/[id]/teams/create/page.tsx`.
+    *   "Email notifications: signup confirmation, weekly digest, team invitations": Handlers under `app/api/emails/` with templates and unsubscribe logic.
+
+## App Flow Integration
+
+*   **Stack-Aligned Flow:**
+
+    *   Next.js 13 Auth Flow → `app/auth/login/page.tsx` uses server actions, calls Supabase Auth, redirects via `app/layout.tsx`.
+    *   Idea Browsing → `app/ideas/page.tsx` (server component) fetching `GET /api/ideas`; paginated and filterable.
+    *   Idea Details & Interest → `app/ideas/[id]/page.tsx` with client component for "Raise Hand" triggering `POST /api/ideas/[id]/interest`.
+    *   Discussion → `app/ideas/[id]/discussions/page.tsx` subscribing to SSE at `app/api/ideas/[id]/discussions/stream`.
+    *   Team Formation → `app/ideas/[id]/teams/create/page.tsx`; after creation, redirect to `app/teams/[teamId]/workspace/page.tsx`.
+    *   Scheduler & Emails → Vercel Cron triggers `GET /api/sync/ideabrowser` and `POST /api/emails/test-digest` via definitions in `vercel.json`.
+
+## Best Practices
+
+*   Next.js 13+ (App Router)
+    *   Use server components for data fetching; minimize client bundles with `"use client"` only when needed.
+    *   Co-locate each route’s `layout.tsx`, `page.tsx`, and `loading.tsx`.
+    *   Leverage dynamic routing (`[id]`) and nested folders for feature separation.
+
+*   TypeScript
+    *   Enable all `strict` compiler options.
+    *   Define shared interfaces/types and infer from Zod schemas.
+    *   Avoid `any`; prefer explicit types.
+
+*   Tailwind CSS
+    *   Use utility classes; avoid custom CSS files.
+    *   Configure JIT purge with accurate `content` paths.
+    *   Use design tokens and theme customization in `tailwind.config.js`.
+
+*   Prisma
+    *   Keep `schema.prisma` DRY; group related models and relations.
+    *   Always generate and commit migration files.
+    *   Seed dev databases via `prisma/seed.ts`.
+
+*   Supabase Auth
+    *   Wrap client in `src/lib/supabaseClient.ts`.
+    *   Protect server routes with user validation (`auth.getUser()`).
+    *   Handle webhooks in `app/api/auth/webhook/route.ts`.
+
+*   Shadcn/UI & Lucide React
+    *   Use prebuilt components; pass `className` for styling.
+    *   Use icon components with `aria-label` for accessibility.
+
+*   React Hook Form & Zod
+    *   Define Zod schemas once and infer TS types for RHF.
+    *   Use `zodResolver` and display errors inline.
+
+*   Resend / Nodemailer
+    *   Store SMTP/API keys in ENV variables.
+    *   Implement unsubscribe links with JWT tokens.
+
+*   Vercel Cron
+    *   Define jobs in `vercel.json`; ensure timezone consistency.
+    *   Log output to centralized logging service.
+
+*   Vercel Deployment
+    *   Use Preview Deployments for PR validation.
+    *   Configure environment variables in the Vercel dashboard.
+
+*   Cursor & Claude Code
+    *   Leverage for in-IDE suggestions and terminal assistance only; do not bundle in production.
+
+## Rules
+
+*   Derive folder/file patterns **directly** from `techStackDoc` versions.
+*   Enforce `app/` directory and nested route folders for Next.js 13 App Router.
+*   Do **not** include a `pages/` directory in App Router projects.
+*   Use `pages/*.tsx` only in legacy Pages Router projects.
+*   Mirror routing logic when using React Router 6 or other frameworks.
+*   All API routes for App Router must reside in `app/api`.
+*   Define cron jobs exclusively in `vercel.json`; avoid external scheduling services.
+
+## Rules Metrics
+
+Before starting the project development, create a metrics file in the root of the project called `cursor_metrics.md`.
+
+### Instructions:
+
+*   Each time a cursor rule is used as context, update `cursor_metrics.md`.
+*   Use the following format for `cursor_metrics.md`:
+
+    # Rules Metrics
+
+    ## Usage
+    The number of times rules is used as context
+
+    *   rule-name.mdc: 5
+    *   another-rule.mdc: 2
+    *   ...other rules

@@ -1,0 +1,237 @@
+---
+description: Apply these rules when making changes to the project
+globs:
+alwaysApply: true
+---
+
+Update this rule if user requested changes to the project requirement, etc.
+# Backend Structure Document
+
+This document explains how the backend of IdeaConnect is built, hosted, and maintained. It uses everyday language to make sure anyone can understand the setup without needing deep technical knowledge.
+
+## 1. Backend Architecture
+
+Overall, the backend follows a simple, layered design to keep everything organized and easy to scale:
+
+- **API Layer (Next.js API Routes):**  
+  - Every feature that the frontend needs—like fetching ideas or posting comments—goes through a dedicated API route in Next.js.  
+  - These routes act like individual functions (serverless functions on Vercel) that run when called.
+
+- **Service Layer (Business Logic):**  
+  - Behind each API route, we have small, focused modules (often called services) that handle the core logic: syncing ideas, managing interests, creating teams, etc.
+
+- **Data Access Layer (Prisma ORM):**  
+  - All database reads and writes go through Prisma, which turns database tables into easy-to-use code objects.
+
+- **Scheduler (Vercel Cron):**  
+  - A built-in cron scheduler automatically triggers daily idea syncs and weekly email digests without manual work.
+
+Why this works well:
+
+- **Scalability:** Serverless functions on Vercel spin up more instances as traffic grows, and the PostgreSQL database can be scaled vertically or with read replicas.  
+- **Maintainability:** Clear separation of concerns (API, services, data) and TypeScript type checking make it easy to add features or fix bugs.  
+- **Performance:** Next.js can cache API responses and pages at the edge, reducing load times. Prisma uses efficient queries, and the database is indexed on key fields.
+
+## 2. Database Management
+
+We use a relational database (PostgreSQL) managed by Supabase:
+
+- **PostgreSQL (Supabase):**  
+  - Stores all data: users, ideas, interests, discussions, teams.  
+  - Supabase takes care of daily backups and basic scaling.
+
+- **Prisma ORM:**  
+  - Lets us write database queries in TypeScript instead of raw SQL.  
+  - Handles schema migrations so the database structure evolves safely over time.
+
+- **Data Practices:**  
+  - **Deduplication:** We check for duplicate ideas by comparing title, source URL, and date before inserting.  
+  - **Indexing:** Common search fields (idea title, user email) are indexed for fast lookups.  
+  - **Backups:** Supabase keeps automated backups, and we can trigger on-demand exports.
+
+## 3. Database Schema
+
+### Human-Readable Overview
+
+- **User**: basic profile (email, name, password hash, role)  
+- **Idea**: title, description, category, difficulty, market size, source URL, imported date  
+- **Interest**: links a user to an idea they’ve “raised a hand” for  
+- **Discussion**: top-level comment tied to an idea, with author and timestamp  
+- **Comment**: replies to a discussion or other comments (nested threads)  
+- **Team**: created around an idea once enough interests are gathered  
+- **TeamMember**: links a user to a team, with optional role label  
+
+### SQL Schema (PostgreSQL)
+
+```sql
+-- Users
+CREATE TABLE "User" (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email         TEXT UNIQUE NOT NULL,
+  name          TEXT,
+  password_hash TEXT NOT NULL,
+  role          TEXT NOT NULL DEFAULT 'user',
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Ideas
+CREATE TABLE "Idea" (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title         TEXT NOT NULL,
+  description   TEXT,
+  category      TEXT,
+  difficulty    TEXT,
+  market_size   TEXT,
+  source_url    TEXT,
+  imported_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Interests
+CREATE TABLE "Interest" (
+  id        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id   UUID REFERENCES "User"(id) ON DELETE CASCADE,
+  idea_id   UUID REFERENCES "Idea"(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(user_id, idea_id)
+);
+
+-- Discussions (top-level threads)
+CREATE TABLE "Discussion" (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  idea_id     UUID REFERENCES "Idea"(id) ON DELETE CASCADE,
+  author_id   UUID REFERENCES "User"(id) ON DELETE SET NULL,
+  content     TEXT NOT NULL,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Comments (nested replies)
+CREATE TABLE "Comment" (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  discussion_id  UUID REFERENCES "Discussion"(id) ON DELETE CASCADE,
+  parent_id      UUID REFERENCES "Comment"(id) ON DELETE CASCADE,
+  author_id      UUID REFERENCES "User"(id) ON DELETE SET NULL,
+  content        TEXT NOT NULL,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Teams
+CREATE TABLE "Team" (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  idea_id      UUID REFERENCES "Idea"(id) ON DELETE CASCADE,
+  name         TEXT NOT NULL,
+  created_by   UUID REFERENCES "User"(id) ON DELETE SET NULL,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Team Members
+CREATE TABLE "TeamMember" (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  team_id    UUID REFERENCES "Team"(id) ON DELETE CASCADE,
+  user_id    UUID REFERENCES "User"(id) ON DELETE CASCADE,
+  role_label TEXT,
+  joined_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(team_id, user_id)
+);
+```
+
+## 4. API Design and Endpoints
+
+We follow a RESTful style. Here are the key endpoints and what they do:
+
+- **Ideas**
+  - `GET /api/ideas` – List all ideas (paginated).  
+  - `GET /api/ideas/featured` – Get today’s featured idea.  
+  - `GET /api/ideas/:id` – Get detailed data for one idea.  
+  - `POST /api/ideas/:id/interest` – Toggle the logged-in user’s interest.  
+
+- **Discussions & Comments**
+  - `GET /api/ideas/:id/discussions` – Fetch discussions for an idea.  
+  - `POST /api/ideas/:id/discussions` – Add a new discussion or comment.  
+
+- **Teams**
+  - `POST /api/ideas/:id/teams` – Create a new team once interest threshold is met.  
+
+- **Users & Authentication**
+  - `POST /api/auth/signup` – Register a new user (email/password).  
+  - `POST /api/auth/login` – Log in and receive a session.  
+  - `POST /api/auth/webhook` – Handle Supabase auth events (email verified, etc.).  
+
+- **Admin & Sync**
+  - `GET /api/sync/ideabrowser` – Trigger a manual idea synchronization (admin only).  
+
+- **Emails**
+  - `POST /api/emails/send-welcome` – Send a welcome email.  
+  - `POST /api/emails/send-digest` – Send the weekly digest.  
+  - `POST /api/emails/send-invitation` – Send a team invite.  
+
+## 5. Hosting Solutions
+
+We host everything on **Vercel**, which offers:
+
+- **Serverless Functions:** Each API route runs as a serverless function that scales automatically.
+- **CDN Delivery:** Static assets and pre-rendered pages are cached at edge locations for fast global performance.
+- **Automatic Deploys:** Every push to our GitHub repository triggers a build and deploy, ensuring the latest code is always live.
+- **Built-in Cron:** Vercel Cron lets us schedule background jobs (daily idea sync, weekly emails) without managing our own servers.
+
+## 6. Infrastructure Components
+
+- **Load Balancer & CDN:** Handled by Vercel’s global network; no extra setup needed.
+- **Caching:**  
+  - Next.js ISR (Incremental Static Regeneration) caches key pages at the edge.  
+  - API responses can be cached for short durations to reduce database load.
+- **Scheduler:** Vercel Cron triggers daily and weekly jobs.
+- **Logging & Alerts:**  
+  - Vercel logs all function executions and errors.  
+  - We monitor sync failures and high error rates via email or Slack alerts.
+
+## 7. Security Measures
+
+- **Authentication & Authorization:**  
+  - Supabase Auth secures all protected routes and issues JSON Web Tokens (JWTs).  
+  - Role-based checks ensure only admins can run certain endpoints (e.g., manual sync).
+
+- **Data Encryption:**  
+  - HTTPS everywhere protects data in transit.  
+  - Supabase encrypts data at rest automatically.
+
+- **Input Validation:**  
+  - All incoming data goes through Zod schemas to prevent malformed or malicious input.
+
+- **Environment Variables:**  
+  - Secrets (database URLs, API keys) are never hard-coded; they live in Vercel’s environment settings.
+
+- **OWASP Best Practices:**  
+  - Protection against SQL injection (using Prisma ORM).  
+  - Cross-site scripting (XSS) mitigated by sanitizing rich text.
+
+- **GDPR Compliance:**  
+  - Users can manage or delete their data via their profile settings.
+  
+## 8. Monitoring and Maintenance
+
+- **Performance Monitoring:**  
+  - We review Vercel function metrics (cold starts, response times).  
+  - Database slow queries are surfaced in Supabase’s dashboard.
+
+- **Error Tracking:**  
+  - Unhandled errors in API routes are logged in Vercel, with optional Sentry integration for deeper insights.
+
+- **Scheduled Maintenance:**  
+  - Routine Prisma schema migrations are applied via Vercel CI/CD pipelines.
+  
+- **Backups & Rollback:**  
+  - Supabase automated backups allow point-in-time recovery.  
+  - Vercel supports rolling back to previous deployments if needed.
+
+## 9. Conclusion and Overall Backend Summary
+
+The backend of IdeaConnect is built to be clear, reliable, and ready to grow:
+
+- **Architecture:** Serverless functions (Next.js API routes) with a clear separation of API, services, and data layers.  
+- **Database:** Supabase PostgreSQL with Prisma ORM for easy, safe data access.  
+- **APIs:** RESTful endpoints covering ideas, interests, discussions, teams, auth, and admin tasks.  
+- **Hosting & Infra:** Vercel handles hosting, scaling, CDN, cron jobs, and automatic deploys.  
+- **Security:** Supabase Auth, HTTPS, input validation, environment variables, and GDPR controls.  
+- **Monitoring:** Vercel logs, database metrics, error tracking, and automated alerts.
+
+This setup ensures fast development, high availability, and smooth performance for users discovering ideas, raising hands, and forming teams around new ventures.

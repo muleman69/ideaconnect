@@ -1,0 +1,212 @@
+---
+description: Apply these rules when making changes to the project
+globs:
+alwaysApply: true
+---
+
+Update this rule if user requested changes to the project requirement, etc.
+# Frontend Guideline Document
+
+This document explains, in everyday language, how the frontend of IdeaConnect is built. It covers the architecture, design principles, styling, components, state management, routing, performance optimizations, testing approach, and a final summary. Anyone reading this—technical or non-technical—should have a clear picture of our frontend setup.
+
+---
+
+## 1. Frontend Architecture
+
+### Technologies and Structure
+
+- **Next.js 13+ (App Router)**: Our foundation. It organizes pages and layouts in the `src/app/` folder, handles server-side and client-side rendering automatically, and provides built-in API routes for backend calls.
+- **React & TypeScript**: We write components in React and use TypeScript for type checking. This combination catches errors early and makes code easier to understand and refactor.
+- **Tailwind CSS**: A utility-first CSS framework that keeps our styling consistent and avoids large, custom stylesheet files.
+- **Shadcn/UI & Lucide React**: Pre-built, themeable UI components (buttons, forms, layouts) and a set of icons that match our design style.
+- **React Hook Form + Zod**: Manage form state on the client side and validate inputs before they go to the server.
+- **Supabase Client**: Although authentication logic lives on the backend via Supabase Auth, our frontend uses the Supabase JavaScript client for secure data fetching and subscriptions.
+
+### How This Supports Scalability, Maintainability, Performance
+
+- **Scalability**: File-based routing with Next.js means new pages or features are added simply by creating new folders and files. Serverless functions (API routes) scale automatically on Vercel.
+- **Maintainability**: TypeScript interfaces document data shapes. Tailwind’s utility classes reduce the chance of CSS conflicts. Component libraries (Shadcn/UI) and a clear folder structure (`components/`, `app/`, `lib/`) make it easy to locate and update code.
+- **Performance**: Next.js does server-side rendering (SSR) and static generation (SSG) where appropriate, ensuring pages load quickly. Code splitting is built in—users only download the JavaScript they need for the page they visit.
+
+---
+
+## 2. Design Principles
+
+We follow three guiding principles to ensure a great user experience:
+
+1. **Usability**
+   - Clear calls-to-action (e.g., “Raise Hand,” “Form Team”).
+   - Consistent layouts and predictable navigation.
+   - Minimal clicks to reach any key feature (idea discovery, discussions, team workspace).
+
+2. **Accessibility**
+   - Semantic HTML elements (`<button>`, `<nav>`, `<header>`).
+   - ARIA roles and labels where needed (for dynamic elements like modals).
+   - Keyboard-navigable components and focus indicators.
+   - Color contrast meets WCAG 2.1 AA standards.
+
+3. **Responsiveness**
+   - Mobile-first design: breakpoints in Tailwind start small and build up.
+   - Flexible layouts using CSS grid and flexbox utilities.
+   - Hidden or collapsed elements on narrow screens (e.g., sidebar becomes a hamburger menu).
+
+These principles are applied consistently: forms size themselves for touch targets, discussion threads wrap gracefully, and modals are centered and focus-trapped.
+
+---
+
+## 3. Styling and Theming
+
+### Styling Approach
+
+- We use **Tailwind CSS** for all styling. Our `tailwind.config.js` defines custom colors, fonts, and spacing scales.
+- We follow a **utility-first** methodology: instead of writing custom class names, we compose small utility classes directly in JSX.
+
+### Theming and Look & Feel
+
+- Style: **Modern Flat Design** with subtle depth (shadows) for interactive elements. Clean lines, minimal gradients, and consistent spacing.
+- We do **not** use glassmorphism; we favor solid or semi-opaque backgrounds for readability.
+
+### Color Palette
+
+| Name          | Hex      | Tailwind Key       |
+| ------------- | -------- | ------------------ |
+| Primary Blue  | #3B82F6  | `primary: '#3B82F6'` |
+| Secondary Indigo | #6366F1 | `secondary: '#6366F1'` |
+| Accent Teal   | #14B8A6  | `accent: '#14B8A6'`  |
+| Background    | #F9FAFB  | `background: '#F9FAFB'` |
+| Surface White | #FFFFFF  | `surface: '#FFFFFF'` |
+| Text High Contrast | #111827 | `text-primary: '#111827'` |
+| Text Secondary | #6B7280  | `text-secondary: '#6B7280'` |
+
+### Typography
+
+- **Font Family:** Inter (system fallback: `-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif`).
+- **Font Sizes:** Defined in Tailwind’s `theme.fontSize` (e.g., `text-base` = 1rem, `text-lg` = 1.125rem).
+
+---
+
+## 4. Component Structure
+
+### Organization
+
+- **`src/app/`**: Next.js pages and layout files. Uses the App Router’s nested layouts.
+- **`src/components/`**: Reusable React components, further subdivided into:
+  - **`atoms/`**: Buttons, icons, inputs.
+  - **`molecules/`**: Form groups, card layouts.
+  - **`organisms/`**: Navigation bars, idea-detail sections.
+- **`src/lib/`**: Utility functions (API wrappers, date formatters).
+
+### Reuse and Consistency
+
+- We avoid duplicating markup by extracting common patterns into components (e.g., `<IdeaCard />`, `<DiscussionThread />`).
+- Components accept props for data and callbacks, keeping them flexible.
+
+### Benefits of Component-Based Architecture
+
+- **Maintainability**: Fix a bug in one place (the component) and all instances update automatically.
+- **Readability**: Small, focused components are easier to understand and test.
+- **Scalability**: Teams can work on different components in parallel without stepping on each other’s toes.
+
+---
+
+## 5. State Management
+
+### Local vs. Shared State
+
+- **Local State**: React’s `useState` or `useReducer` for UI toggles (e.g., modal open/close, form inputs).
+- **Shared State**: Context API for theme or user session data (e.g., current user info, auth token).
+
+### Server State
+
+- We fetch and cache data (ideas, discussions, interests) using **Next.js data fetching** patterns:
+  - **`getServerSideProps`** or **Server Components** for initial data.
+  - **Client Components** using the Supabase client or **SWR** (if added later) for real-time updates.
+
+### Forms
+
+- **React Hook Form** manages form state and submission.
+- **Zod** validates inputs against a schema before sending to API routes.
+
+Together, these choices keep our data flow predictable and performant.
+
+---
+
+## 6. Routing and Navigation
+
+### Routing
+
+- **File-based**: The `src/app/` folder structure maps directly to URL paths:
+  - `/` → Homepage (idea feed)
+  - `/ideas/[id]/page.tsx` → Idea detail page
+  - `/discussions/[threadId]` → Discussion thread (optional)
+  - `/teams/[teamId]` → Team workspace
+  - `/profile` → User profile
+- **Layouts**: Shared components (headers, sidebars) live in nested `layout.tsx` files to avoid repetition.
+
+### Navigation
+
+- **Header / Navbar**: Top of every page with logo and primary links.
+- **Sidebar (Desktop)**: Persistent menu for Home, My Interests, My Teams, Discussions, Profile.
+- **Mobile Menu**: Hamburger icon toggles a slide-in drawer with the same links.
+- **Breadcrumbs** (optional) on detail pages to help users understand context.
+
+Animations and transitions use Tailwind’s built-in utilities for smooth fades and slides.
+
+---
+
+## 7. Performance Optimization
+
+1. **Server-Side Rendering & Static Generation**
+   - Render critical pages (homepage, idea details) on the server for faster first paint.
+2. **Code Splitting**
+   - Next.js automatically splits code by page. Dynamic imports (`next/dynamic`) load heavy components only when needed (e.g., the rich-text editor).
+3. **Image Optimization**
+   - Use Next.js `<Image />` component to serve responsive, compressed images.
+4. **Lazy Loading**
+   - Defer offscreen elements (e.g., comments below the fold) with `loading="lazy"` or dynamic imports.
+5. **Asset Compression**
+   - Vercel automatically compresses JavaScript and CSS. We ensure large libraries are only imported where necessary.
+6. **Database Caching**
+   - Supabase’s CDN and in-memory cache reduce latency for repeated queries.
+
+These strategies keep page loads under 2 seconds even on average mobile connections.
+
+---
+
+## 8. Testing and Quality Assurance
+
+### Unit Testing
+
+- **Jest + React Testing Library**:
+  - Test individual components and utility functions in isolation.
+  - Ensure UI renders correctly given different props and states.
+
+### Integration Testing
+
+- Test flows that involve multiple components (e.g., filling a form, submitting it, and seeing a new item in a list).
+
+### End-to-End (E2E) Testing
+
+- **Playwright** or **Cypress**:
+  - Simulate real user journeys (signup → browse ideas → raise hand → form team).
+  - Validate critical paths before every release.
+
+### Linting & Formatting
+
+- **ESLint** with TypeScript rules catches code smells and potential bugs.
+- **Prettier** formats code consistently.
+
+### Continuous Integration
+
+- On every pull request, GitHub Actions (or Vercel’s CI) runs linting, unit tests, and E2E tests in parallel.
+- Builds only deploy if all checks pass, ensuring stability in production.
+
+---
+
+## 9. Conclusion and Overall Frontend Summary
+
+IdeaConnect’s frontend is built on a modern stack—Next.js with TypeScript and Tailwind CSS—backed by reusable UI components (Shadcn/UI) and a clear file structure. We emphasize usability, accessibility, and responsiveness in every design decision. State is handled locally with React hooks, shared via Context, and fetched efficiently using Next.js patterns and Supabase. Routing is intuitive thanks to file-based layouts, and performance is reinforced by server-side rendering, code splitting, and image optimization.
+
+Testing at every level (unit, integration, E2E) and automated CI/CD pipelines guarantee code quality and fast iteration. The result is a scalable, maintainable, and high-performance frontend that aligns perfectly with our goal: helping entrepreneurs discover ideas, express interest, and form teams with minimal friction.
+
+With these guidelines, any new team member or stakeholder can understand how the frontend works, why we chose each technology, and how to extend or maintain the codebase for future growth.

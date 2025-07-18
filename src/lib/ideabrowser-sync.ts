@@ -249,12 +249,18 @@ export class IdeaBrowserSync {
       // Try h1 elements first, but skip generic ones
       $('h1').each((i, el) => {
         const text = $(el).text().trim();
+        const textLower = text.toLowerCase();
         if (text && 
             text !== 'Idea of the Day' && 
             text !== 'IdeaBrowser' &&
             text !== 'Daily Idea' &&
-            !text.toLowerCase().includes('welcome') &&
-            text.length > 10) {
+            textLower !== 'today\'s idea' &&
+            !textLower.includes('welcome') &&
+            !textLower.includes('sign up') &&
+            !textLower.includes('login') &&
+            !textLower.includes('ideabrowser') &&
+            text.length > 15 && // More strict length requirement
+            text.includes(' ')) { // Ensure it's not just one word
           title = text;
           return false; // Break out of loop
         }
@@ -264,12 +270,18 @@ export class IdeaBrowserSync {
       if (!title) {
         $('h2').each((i, el) => {
           const text = $(el).text().trim();
+          const textLower = text.toLowerCase();
           if (text && 
               text !== 'Idea of the Day' && 
               text !== 'IdeaBrowser' &&
               text !== 'Daily Idea' &&
-              !text.toLowerCase().includes('welcome') &&
-              text.length > 10) {
+              textLower !== 'today\'s idea' &&
+              !textLower.includes('welcome') &&
+              !textLower.includes('sign up') &&
+              !textLower.includes('login') &&
+              !textLower.includes('ideabrowser') &&
+              text.length > 15 &&
+              text.includes(' ')) {
             title = text;
             return false; // Break out of loop
           }
@@ -318,7 +330,19 @@ export class IdeaBrowserSync {
       const marketSize = this.extractMarketSize($);
       const difficultyLevel = this.extractDifficultyLevel($);
       
-      if (title && description && title !== 'Idea of the Day') {
+      // Final validation to ensure quality
+      const titleLower = title.toLowerCase();
+      const isValidTitle = title && 
+        title !== 'Idea of the Day' &&
+        titleLower !== 'daily idea' &&
+        titleLower !== 'today\'s idea' &&
+        titleLower !== 'ideabrowser' &&
+        !titleLower.includes('welcome') &&
+        !titleLower.includes('sign up') &&
+        title.length > 15 &&
+        title.includes(' ');
+        
+      if (isValidTitle && description && description.length > 50) {
         console.log(`✓ Got current Idea of the Day: ${title}`);
         return {
           id: `idea-of-the-day-${new Date().toISOString().split('T')[0]}`,
@@ -522,25 +546,85 @@ export class IdeaBrowserSync {
           return false;
         }
         
-        // Filter out generic/invalid titles
-        if (idea.title === 'Idea of the Day' && idea.description.length < 100) {
-          console.log(`Filtered out generic title with short description: ${idea.title}`);
+        // Enhanced filtering for generic/invalid titles
+        const titleLower = idea.title.toLowerCase();
+        if (titleLower === 'idea of the day' || 
+            titleLower === 'daily idea' ||
+            titleLower === 'ideabrowser' ||
+            titleLower === 'today\'s idea' ||
+            titleLower.includes('welcome to') ||
+            titleLower.includes('sign up') ||
+            titleLower.includes('login') ||
+            idea.title.length < 10) {
+          console.log(`Filtered out generic/invalid title: ${idea.title}`);
+          return false;
+        }
+        
+        // Filter out ideas with very short or generic descriptions
+        if (idea.description.length < 50 ||
+            idea.description.toLowerCase().includes('this is a placeholder') ||
+            idea.description.toLowerCase().includes('coming soon')) {
+          console.log(`Filtered out idea with poor description: ${idea.title}`);
           return false;
         }
         
         return true;
       });
       
-      // Remove duplicates based on both title AND description content
+      // Enhanced deduplication logic
       const uniqueIdeas = validIdeas.filter((idea, index, self) => {
-        // Find if there's any previous idea with same title OR same description (first 200 chars)
-        const duplicateIndex = self.findIndex(i => 
-          i.title === idea.title || 
-          i.description.substring(0, 200) === idea.description.substring(0, 200)
-        );
+        // Normalize title for comparison (remove special chars, extra spaces, make lowercase)
+        const normalizeTitle = (title: string) => {
+          return title.toLowerCase()
+            .replace(/[^\w\s]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+        };
         
-        // Keep only the first occurrence (which will be the best one from Strategy 1)
-        return duplicateIndex === index;
+        const currentNormalizedTitle = normalizeTitle(idea.title);
+        const currentDescStart = idea.description.substring(0, 150).toLowerCase().trim();
+        
+        // Check for duplicates using multiple criteria
+        const duplicateIndex = self.findIndex((otherIdea, otherIndex) => {
+          if (otherIndex >= index) return false; // Only check previous ideas
+          
+          const otherNormalizedTitle = normalizeTitle(otherIdea.title);
+          const otherDescStart = otherIdea.description.substring(0, 150).toLowerCase().trim();
+          
+          // Consider it a duplicate if:
+          // 1. Exact title match (normalized)
+          // 2. Very similar titles (>80% similarity)
+          // 3. Same description start (first 150 chars)
+          // 4. Same core content (title contains other title or vice versa)
+          
+          if (currentNormalizedTitle === otherNormalizedTitle) return true;
+          if (currentDescStart === otherDescStart && currentDescStart.length > 0) return true;
+          
+          // Check if one title is contained in the other (accounting for variations)
+          if (currentNormalizedTitle.includes(otherNormalizedTitle) || 
+              otherNormalizedTitle.includes(currentNormalizedTitle)) {
+            return true;
+          }
+          
+          // Check title similarity (simple word overlap)
+          const currentWords = currentNormalizedTitle.split(' ').filter(w => w.length > 3);
+          const otherWords = otherNormalizedTitle.split(' ').filter(w => w.length > 3);
+          const commonWords = currentWords.filter(word => otherWords.includes(word));
+          
+          if (currentWords.length > 0 && otherWords.length > 0) {
+            const similarity = (commonWords.length * 2) / (currentWords.length + otherWords.length);
+            if (similarity > 0.7) return true; // 70% word overlap = duplicate
+          }
+          
+          return false;
+        });
+        
+        if (duplicateIndex !== -1) {
+          console.log(`Filtered out duplicate: "${idea.title}" (duplicate of: "${self[duplicateIndex].title}")`);
+          return false;
+        }
+        
+        return true;
       });
       
       console.log(`Successfully scraped ${uniqueIdeas.length} unique ideas from IdeaBrowser.com`);
@@ -553,32 +637,108 @@ export class IdeaBrowserSync {
   }
   
   /**
+   * Removes duplicate ideas from the database
+   */
+  private static async cleanupDuplicates(): Promise<number> {
+    try {
+      console.log('Cleaning up duplicate ideas in database...');
+      
+      // Find ideas with duplicate titles (case insensitive)
+      const duplicateGroups = await prisma.$queryRaw<{title: string, ids: string[], count: number}[]>`
+        SELECT 
+          LOWER(title) as title,
+          array_agg(id) as ids,
+          COUNT(*) as count
+        FROM ideas 
+        GROUP BY LOWER(title) 
+        HAVING COUNT(*) > 1
+      `;
+      
+      let deletedCount = 0;
+      
+      for (const group of duplicateGroups) {
+        if (group.ids && group.ids.length > 1) {
+          // Keep the first one (usually the best quality), delete the rest
+          const idsToDelete = group.ids.slice(1);
+          
+          const deleted = await prisma.idea.deleteMany({
+            where: {
+              id: {
+                in: idsToDelete
+              }
+            }
+          });
+          
+          deletedCount += deleted.count;
+          console.log(`Removed ${deleted.count} duplicates of "${group.title}"`);
+        }
+      }
+      
+      console.log(`Cleanup completed. Removed ${deletedCount} duplicate ideas.`);
+      return deletedCount;
+    } catch (error) {
+      console.error('Error during duplicate cleanup:', error);
+      return 0;
+    }
+  }
+
+  /**
    * Syncs ideas from IdeaBrowser to local database
    */
   public static async syncIdeas(): Promise<{ 
     synced: number; 
     skipped: number; 
-    errors: string[] 
+    errors: string[];
+    cleaned: number;
   }> {
     const results = {
       synced: 0,
       skipped: 0,
-      errors: [] as string[]
+      errors: [] as string[],
+      cleaned: 0
     };
     
     try {
       console.log('Starting IdeaBrowser sync...');
+      
+      // First, clean up any existing duplicates
+      results.cleaned = await this.cleanupDuplicates();
+      
       const ideas = await this.fetchIdeasFromSource();
       
       for (const ideaData of ideas) {
         try {
-          // Check if idea already exists
-          const existingIdea = await prisma.idea.findUnique({
+          // Enhanced duplicate checking in database
+          // Check by sourceId first
+          let existingIdea = await prisma.idea.findUnique({
             where: { sourceId: ideaData.id }
           });
           
+          // If not found by sourceId, check by title similarity
+          if (!existingIdea) {
+            const existingByTitle = await prisma.idea.findFirst({
+              where: {
+                title: {
+                  contains: ideaData.title,
+                  mode: 'insensitive'
+                }
+              }
+            });
+            
+            if (existingByTitle) {
+              // Check if it's actually the same idea by comparing first 100 chars of description
+              const existingDescStart = existingByTitle.description.substring(0, 100).toLowerCase();
+              const newDescStart = ideaData.description.substring(0, 100).toLowerCase();
+              
+              if (existingDescStart === newDescStart || 
+                  existingByTitle.title.toLowerCase() === ideaData.title.toLowerCase()) {
+                existingIdea = existingByTitle;
+              }
+            }
+          }
+          
           if (existingIdea) {
-            console.log(`Skipping existing idea: ${ideaData.title}`);
+            console.log(`Skipping existing idea: ${ideaData.title} (found existing: ${existingIdea.title})`);
             results.skipped++;
             continue;
           }

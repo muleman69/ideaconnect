@@ -12,6 +12,7 @@ export async function GET() {
     logger.info('IdeaBrowser sync completed successfully', {
       synced: results.synced,
       skipped: results.skipped,
+      cleaned: results.cleaned,
       errors: results.errors.length,
     });
     
@@ -21,6 +22,7 @@ export async function GET() {
       results: {
         synced: results.synced,
         skipped: results.skipped,
+        cleaned: results.cleaned,
         errors: results.errors.length,
         errorDetails: results.errors
       }

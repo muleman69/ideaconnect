@@ -1,0 +1,135 @@
+---
+description: Apply these rules when making changes to the project
+globs:
+alwaysApply: true
+---
+
+Update this rule if user requested changes to the project requirement, etc.
+# Tech Stack Document for IdeaConnect
+
+This document explains, in everyday language, the technology choices behind IdeaConnect. It will help non-technical readers understand why each tool or service was selected and how it contributes to building a reliable, user-friendly platform.
+
+## Frontend Technologies
+
+The frontend is what users see and interact with in their browser. We chose modern tools to make the interface fast, responsive, and easy to maintain.
+
+- **Next.js 13 (App Router)**
+  - A popular framework built on React that handles page loading, routing, and server-side rendering out of the box.
+  - Improves page speed and search engine visibility by preloading content on the server.
+
+- **TypeScript**
+  - A superset of JavaScript that adds type checking (like spell-check for code).
+  - Helps catch errors early, making the code more reliable and easier to understand.
+
+- **Tailwind CSS**
+  - A utility-first CSS framework that provides ready-made classes for styling (e.g., `bg-blue-500`, `text-center`).
+  - Speeds up design work and ensures a consistent look without writing custom CSS from scratch.
+
+- **Shadcn/UI**
+  - A library of pre-built React components styled with Tailwind.
+  - Lets us assemble forms, buttons, modals, and other elements quickly while keeping a cohesive design.
+
+- **Lucide React**
+  - A set of clean, open-source icons that integrate easily with React components.
+  - Ensures visual consistency and accessibility across the UI.
+
+- **React Hook Form + Zod**
+  - **React Hook Form** handles form state and submission efficiently, reducing unnecessary re-renders.
+  - **Zod** validates form inputs against defined rules, ensuring data is correct before it’s sent to the server.
+
+## Backend Technologies
+
+The backend powers the application’s data storage, business logic, and user authentication. Our choices focus on reliability, scalability, and ease of development.
+
+- **Supabase PostgreSQL**
+  - A managed database service based on PostgreSQL.
+  - Stores ideas, user profiles, discussions, and team details in structured tables.
+
+- **Prisma ORM**
+  - A developer-friendly layer that lets us query the database using JavaScript/TypeScript instead of raw SQL.
+  - Automatically maps database tables to code objects, reducing boilerplate and potential errors.
+
+- **Supabase Auth**
+  - Built-in authentication and authorization service for handling sign-ups, logins, password resets, and security rules.
+  - Simplifies user management and integrates seamlessly with the database.
+
+- **Next.js API Routes**
+  - Endpoints provided by Next.js to handle data requests (e.g., fetching ideas, posting comments, forming teams).
+  - Keeps frontend and backend code together in one project for simpler maintenance.
+
+- **Scheduler (Vercel Cron / Cron Jobs)**
+  - Automates daily tasks like syncing new ideas from IdeaBrowser.com and sending weekly email digests.
+  - Ensures the platform stays up to date without manual intervention.
+
+## Infrastructure and Deployment
+
+These components ensure the application is easy to update, stays reliable, and can grow with user demand.
+
+- **Git & GitHub**
+  - Version control system for tracking code changes, collaborating across the team, and managing releases.
+
+- **Vercel**
+  - Hosting platform designed to work seamlessly with Next.js projects.
+  - Automatically builds and deploys the app on every code push, providing a preview URL for testing.
+
+- **Continuous Integration / Continuous Deployment (CI/CD)**
+  - Vercel’s built-in pipeline runs tests, builds the project, and deploys only if everything passes.
+  - Reduces deployment errors and speeds up the release process.
+
+- **Developer Tooling (Cursor & Claude Code)**
+  - AI-powered coding assistants integrated into our development workflow.
+  - Offer real-time suggestions, refactoring help, and codebase insights to accelerate development.
+
+## Third-Party Integrations
+
+To extend functionality without reinventing the wheel, we rely on proven external services.
+
+- **IdeaBrowser.com Sync**
+  - Either via a public API or a custom web scraper to fetch daily startup ideas.
+  - Imported ideas include metadata (category, difficulty, market size) and bypass duplicates with a deduplication step.
+
+- **Resend / Nodemailer (Email Service)**
+  - Handles sending transactional emails such as welcome messages, verification links, weekly digests, and team invitations.
+  - Chosen for reliability and easy API integration.
+
+- **Supabase Webhooks**
+  - Trigger backend functions when authentication events occur (e.g., new signup, email verification).
+  - Keeps user data in sync and enables custom onboarding flows.
+
+## Security and Performance Considerations
+
+We follow best practices to protect user data and ensure a smooth experience.
+
+- **Authentication & Authorization**
+  - Supabase Auth secures all protected routes and ensures only valid users can access sensitive data.
+
+- **Input Validation**
+  - Forms validated with Zod prevent malformed data from reaching the server.
+  - Reduces the risk of common vulnerabilities like SQL injection or malformed entries.
+
+- **Environment Variables**
+  - Secrets (API keys, database URLs) are stored outside the codebase in environment variables.
+  - Prevents accidental exposure of sensitive information.
+
+- **HTTPS Everywhere**
+  - All network traffic is encrypted in transit, ensuring data privacy and integrity.
+
+- **Server-Side Rendering & Caching**
+  - Next.js renders pages on the server and reuses cached versions when possible.
+  - Delivers fast load times and reduces server load under high traffic.
+
+- **Error Handling & Monitoring**
+  - Built-in logging for API errors and synchronization failures.
+  - Alerting mechanisms notify administrators if something goes wrong with the daily sync or email services.
+
+## Conclusion and Overall Tech Stack Summary
+
+IdeaConnect combines modern, battle-tested technologies to deliver a secure, high-performance platform for discovering and collaborating on startup ideas. Here’s a quick recap:
+
+- **Frontend:** Next.js 13, TypeScript, Tailwind CSS, Shadcn/UI, Lucide React, React Hook Form, Zod
+- **Backend:** Supabase PostgreSQL, Prisma ORM, Supabase Auth, Next.js API routes, Vercel Cron
+- **Infrastructure:** GitHub, Vercel (CI/CD), environment variables, developer tooling with Cursor & Claude Code
+- **Integrations:** IdeaBrowser.com sync (API/scraping), Resend/Nodemailer for emails, Supabase webhooks
+- **Security & Performance:** HTTPS, input validation, server-side rendering, caching, robust error handling
+
+These choices align with our goals of fast development, reliable operations, and an outstanding user experience. They also ensure we can scale as the community grows, maintain high security standards, and quickly roll out new features in the future.

@@ -1,0 +1,172 @@
+---
+description: Apply these rules when making changes to the project
+globs:
+alwaysApply: true
+---
+
+Update this rule if user requested changes to the project requirement, etc.
+# IdeaConnect Security Guidelines
+
+This document outlines essential security principles and specific practices for the IdeaConnect platform. It ensures we build a secure, resilient, and trustworthy application from design through deployment.
+
+---
+
+## 1. Security by Design & Governance
+
+- Adopt a **security-first mindset** at every stage: design, development, testing, and operations.  
+- Enforce **least privilege**: grant services, users, and components only the permissions they need.  
+- Embed **defense in depth**: multiple layers (network, application, data) protect against single-point failures.  
+- Maintain an **incident response plan**: document steps to detect, contain, and remediate breaches.
+
+---
+
+## 2. Authentication & Access Control
+
+### Supabase Auth Configuration
+- Enforce **strong password policies**: minimum length (≥ 10 characters), complexity rules, and rotation reminders.  
+- Use **Argon2** or **bcrypt** (via Supabase) with unique salts for password hashing.  
+- Enable **email verification** and restrict unverified accounts from sensitive actions.  
+- Configure **JWT settings**:
+  - Disable `alg: none`.  
+  - Use RS256 or HS256 with secure key storage.  
+  - Set a reasonable expiration (`exp`) (e.g., 1 hour) and refresh rules.  
+- Implement **Multi-Factor Authentication (MFA)** for admin and power-user roles.
+
+### Role-Based Access Control (RBAC)
+- Define fine-grained roles (e.g., User, Moderator, Admin).  
+- Enforce server-side checks on every API route and UI action.  
+- Store role assignments in the database and cache in memory for performance.  
+- Log elevated‐privilege operations (team deletion, sync dashboard access).
+
+### Session Management
+- Use **Secure**, **HttpOnly**, and `SameSite=Strict` cookies for sessions.  
+- Regenerate session identifiers upon login.  
+- Enforce **idle** (e.g., 30 min) and **absolute** (e.g., 8 hr) timeouts.  
+- Provide explicit logout endpoints and invalidate sessions immediately.
+
+---
+
+## 3. Input Validation & Output Encoding
+
+### Server-Side Validation
+- Use **Zod** schemas on all Next.js API routes (requests & responses).  
+- Never trust client‐side validation alone.  
+- Validate all query parameters, JSON bodies, and form submissions.
+
+### Prevent Injection Attacks
+- Use **Prisma ORM** parameterized queries — avoid raw SQL whenever possible.  
+- Sanitize and validate any dynamic queries (e.g., search filters).  
+- For web scraping inputs (IdeaBrowser.com selectors), treat scraped HTML as untrusted: strip scripts, sanitize before storing.
+
+### Mitigate XSS & Template Injection
+- Escape all user‐supplied data in React components by default.  
+- Enforce a strict **Content Security Policy** (CSP) via HTTP headers.  
+- Avoid dangerouslySetInnerHTML unless sanitized with a vetted library (e.g., DOMPurify).
+
+### File Upload Security (if applicable)
+- Validate file MIME types and sizes.  
+- Store uploads in a protected S3 bucket or outside the webroot on Vercel.  
+- Rename files and forbid directory traversal.
+
+---
+
+## 4. Data Protection & Privacy
+
+### Encryption
+- Enforce **TLS 1.2+** for all API, web traffic, and database connections.  
+- Encrypt sensitive data at rest (PostgreSQL Transparent Data Encryption or disk‐level encryption).  
+- Use environment variables and/or a secrets manager (e.g., Vercel Secrets, AWS Secrets Manager) — never commit secrets to source control.
+
+### PII & Data Minimization
+- Store only necessary PII (email, display name).  
+- Mask or redacted sensitive fields in logs and error messages.  
+- Implement data retention and deletion policies (GDPR compliance) for user-requested account removal.
+
+### Logging & Monitoring
+- Log user authentication events, sync job failures, and admin actions.  
+- Exclude sensitive data (passwords, tokens) from logs.  
+- Integrate an alerting system (e.g., Sentry, Datadog) for high-severity errors and security events.
+
+---
+
+## 5. API & Service Security
+
+### HTTPS Enforcement & CORS
+- Redirect all HTTP → HTTPS at the load-balancer or Vercel edge.  
+- Restrict CORS to trusted origins (`https://ideaconnect.co`, admin sub-domains).
+
+### Rate Limiting & Throttling
+- Implement per-IP and per-user rate limits on high-risk endpoints (login, password reset, idea-express interest).  
+- Defend against brute-force and DoS attacks using Vercel Edge functions or a third-party WAF.
+
+### API Design Hardening
+- Use appropriate HTTP methods.  
+- Avoid verbose error messages; return generic errors (e.g., 400 Bad Request, 401 Unauthorized).  
+- Version your API (`/api/v1/...`) to manage deprecation safely.
+
+---
+
+## 6. Web Application Security Hygiene
+
+### Security Headers
+- `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload`  
+- `X-Content-Type-Options: nosniff`  
+- `X-Frame-Options: DENY` or CSP `frame-ancestors 'none'`  
+- `Referrer-Policy: no-referrer-when-downgrade`  
+- `Permissions-Policy` to disable geolocation, camera, etc.
+
+### CSRF Protection
+- Use anti-CSRF tokens (Synchronizer tokens) on all state-changing requests.  
+- Leverage Next.js built-in CSRF libraries or custom middleware for API routes.
+
+### Secure Cookies & Storage
+- Mark cookies `Secure; HttpOnly; SameSite=Strict`.  
+- Avoid storing JWTs or secrets in `localStorage` or `sessionStorage`.
+
+---
+
+## 7. Infrastructure & CI/CD Security
+
+### Vercel Best Practices
+- Disable debugging and verbose logs in production.  
+- Use Vercel Environments (Production, Preview, Development) with separate environment variables.  
+- Limit who can trigger deployments and review access logs regularly.
+
+### Server & Network Hardening
+- Expose only necessary ports (HTTPS).  
+- Keep Vercel runtime & dependencies up to date.  
+- Use automated SCA tools (e.g., Dependabot) to surface vulnerable dependencies.
+
+### Secrets Management
+- Store API keys, database URLs, and email service credentials in Vercel Secrets.  
+- Rotate keys periodically and after any suspected compromise.
+
+---
+
+## 8. Dependency Management
+
+- Maintain deterministic builds with `package-lock.json` (npm) or `yarn.lock`.  
+- Vet third-party libraries for maintenance status and CVEs before adoption.  
+- Schedule regular dependency updates and vulnerability scans (e.g., GitHub Actions with Snyk).
+
+---
+
+## 9. Automated Sync & Web Scraping Security
+
+- If using web scraping:
+  - Respect `robots.txt` and rate limits.  
+  - Implement exponential backoff and retry logic.  
+  - Sanitize scraped content before database insertion.
+- Restrict the manual-sync endpoint (`/api/sync/ideabrowser`) to admin roles only, protected by JWT and RBAC checks.
+
+---
+
+## 10. Ongoing Security Practices
+
+- Conduct periodic **penetration testing** and **code reviews** focused on security.  
+- Maintain an **access audit** of all third-party services and rotate credentials quarterly.  
+- Provide developers with secure coding training and enforce guideline compliance via pull-request checks.
+
+---
+
+Adhering to these guidelines will help ensure that IdeaConnect remains secure by design, protects user data, and maintains trust as it scales. Regularly review and update this document as technologies and threat landscapes evolve.

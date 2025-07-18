@@ -1,0 +1,154 @@
+---
+description: Apply these rules when making changes to the project
+globs:
+alwaysApply: true
+---
+
+Update this rule if user requested changes to the project requirement, etc.
+# Project Requirements Document (PRD)
+
+## 1. Project Overview
+
+IdeaConnect is a web platform for entrepreneurs to discover startup ideas, express interest in them, and team up with like-minded individuals to build real ventures. Every day, the system automatically syncs fresh ideas from IdeaBrowser.com, presents them in an easy-to-browse feed, and lets users “raise a hand” on ideas they find exciting. Once enough people have shown interest in the same idea, they can spin up a dedicated team space to collaborate.
+
+This platform exists because great ideas often sit idle for lack of collaborators. By centralizing idea discovery, interest signaling, and team formation, IdeaConnect reduces friction and speeds up the process from inspiration to action. Key objectives for launch are:\
+• Smooth, reliable daily idea sync (no duplicates)\
+• Intuitive “raise hand” and interest tracking\
+• Basic discussion threads around each idea\
+• A lightweight team-creation wizard and workspace\
+Success will be measured by daily active users, number of interests raised, teams formed, and system uptime.
+
+## 2. In-Scope vs. Out-of-Scope
+
+### In-Scope (v1.0)
+
+*   Automated daily synchronization of ideas from IdeaBrowser.com (via API or scraping)
+*   Deduplication and metadata storage (category, difficulty, market size)
+*   User authentication (email/password) and profile management
+*   Idea browsing, detail pages, “Today’s Idea” highlight
+*   One-click “Raise Hand” interest mechanism
+*   Listing of interested users per idea
+*   Threaded discussion pages with rich-text editor
+*   Team formation wizard once an idea hits a configurable interest threshold (e.g., 3 users)
+*   Basic team workspace (shared chat channel or message board)
+*   Email notifications: signup confirmation, weekly digest, team invitations
+*   Admin dashboard for sync status, logs, and manual re-sync
+
+### Out-of-Scope (Phase 1)
+
+*   Advanced AI-driven matching or skills-based teammate suggestions
+*   Public team showcase with external visibility
+*   Full task management or document-editing in team workspace
+*   Mobile-native apps (iOS/Android)
+*   Third-party integrations beyond IdeaBrowser.com
+*   Fine-grained analytics dashboards
+*   Multi-language support
+
+## 3. User Flow
+
+When a new user arrives, they see a landing page with “Today’s Idea,” a brief description, and a prominent signup form. They register with email and password, receive a verification link, and once confirmed, land on the dashboard. The left sidebar shows navigation links: Home (idea feed), My Interests, My Teams, Discussions, and Profile. The main area lists today’s featured idea at top, followed by a paginated feed of recent and related ideas.
+
+To explore, the user clicks an idea card, sees full details (description, metadata, interest count, discussion preview), and taps “Raise Hand” to join. Immediately, they see who else is interested. As more people raise hands, a “Form Team” button lights up. Clicking it launches a simple wizard: name your team, assign roles (optional), and invite others. After creation, the user enters a team workspace—essentially a dedicated discussion thread—where they can talk through next steps. Meanwhile, email notifications keep them in the loop on new interests, invites, and weekly newsletters.
+
+## 4. Core Features
+
+*   **Authentication & Profiles**\
+    • Sign up / login / email verification\
+    • Profile page with interests, skills, privacy controls
+*   **Idea Synchronization**\
+    • Daily fetch from IdeaBrowser.com\
+    • Deduplication and metadata capture\
+    • Admin dashboard for monitoring and manual triggers
+*   **Idea Discovery & Detail**\
+    • Homepage feed with “Today’s Idea” spotlight\
+    • Filtering, pagination, and related-idea suggestions\
+    • Idea detail view with metadata and interest stats
+*   **Interest Signaling**\
+    • One-click “Raise Hand” button\
+    • Visual indicator (counter/progress bar)\
+    • List of interested users (with privacy settings)\
+    • Ability to withdraw interest
+*   **Discussion Spaces**\
+    • Dedicated thread per idea\
+    • Rich-text editor (formatting, links, media embeds)\
+    • Nested comments and real-time updates\
+    • Mention/tag users and basic moderation tools
+*   **Team Formation Wizard**\
+    • Trigger once interest threshold met\
+    • Define team name, roles, objectives\
+    • Invite internal / external participants\
+    • Lightweight team workspace for chat
+*   **Notifications & Emails**\
+    • Welcome and verification emails\
+    • Weekly digest of new ideas and trending discussions\
+    • Team invitations and match alerts\
+    • Unsubscribe / preference management
+*   **Admin Dashboard**\
+    • Monitor sync jobs, view logs, trigger manual jobs\
+    • Manage flagged discussions or users
+
+## 5. Tech Stack & Tools
+
+*   **Frontend:** Next.js 13+ (App Router) with React, TypeScript
+*   **Styling:** Tailwind CSS
+*   **Backend:** Next.js API routes, Node.js, TypeScript
+*   **Database & ORM:** Supabase PostgreSQL + Prisma
+*   **Authentication:** Supabase Auth (email/password, webhooks)
+*   **UI Components:** Shadcn/UI, Lucide React icons
+*   **Forms & Validation:** React Hook Form + Zod
+*   **Email Service:** Resend or Nodemailer for transactional emails
+*   **Scheduler:** Vercel Cron (for daily sync & digests)
+*   **Hosting:** Vercel (with domain `ideaconnect.co`)
+*   **IDE & AI Assistants:** Cursor (in-IDE suggestions), Claude Code (terminal code assistance)
+
+## 6. Non-Functional Requirements
+
+*   **Performance:**\
+    • API responses <200 ms under normal load\
+    • Page load <2 s on 4G networks
+*   **Scalability:**\
+    • Handle up to 10,000 users and 100,000 idea records initially
+*   **Security:**\
+    • OWASP Top 10 compliance (XSS, SQL Injection prevention)\
+    • HTTPS enforced, data encryption at rest & in transit\
+    • Proper authentication checks on API routes
+*   **Usability & Accessibility:**\
+    • WCAG 2.1 AA compliance\
+    • Responsive design across desktop and tablet
+*   **Reliability & Uptime:**\
+    • 99.9% uptime SLA\
+    • Automated alerts on sync failures or high error rates
+*   **Compliance:**\
+    • GDPR-compatible privacy controls\
+    • Clear cookie and data policies
+
+## 7. Constraints & Assumptions
+
+*   **IdeaBrowser Integration:**\
+    • We assume either a stable public API or permission to scrape HTML.\
+    • Scheduling environment supports daily cron jobs.
+*   **Supabase:**\
+    • Supabase Auth and database are available and performant.
+*   **Team Threshold:**\
+    • Default “raise hand” threshold is three users, configurable by admin.
+*   **User Base:**\
+    • Users will access via modern browsers (Chrome, Firefox, Safari).
+*   **Data Volumes:**\
+    • Initial dataset is moderate; no massive historical backfill required.
+
+## 8. Known Issues & Potential Pitfalls
+
+*   **API/HTML Changes at IdeaBrowser.com**\
+    • Fix: build a robust scraper with selector fallback or request official API access.
+*   **Rate Limits & Throttling**\
+    • Fix: implement exponential backoff, caching, and error retries.
+*   **Duplicate Idea Entries**\
+    • Fix: ensure deduplication logic on title + source URL + date.
+*   **Email Deliverability**\
+    • Fix: use verified sending domain, monitor bounce rates, provide unsubscribe links.
+*   **Real-Time Discussion Load**\
+    • Fix: limit long polling or switch to WebSocket only for active threads; paginate comments.
+*   **Time Zone Discrepancies**\
+    • Fix: store all times in UTC; present based on user locale.
+
+This PRD lays out every essential detail—features, flows, tech stack, non-functional needs, and known risks—so the AI model can generate precise technical documents (tech stack specs, frontend guidelines, backend structure, etc.) without ambiguity.
