@@ -1,7 +1,16 @@
-import { type NextRequest } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 import { updateSession } from './lib/supabase/middleware'
 
 export async function middleware(request: NextRequest) {
+  // Skip middleware for public API endpoints completely
+  const pathname = request.nextUrl.pathname;
+  
+  if (pathname.startsWith('/api/sync') || 
+      pathname.startsWith('/api/admin') || 
+      pathname.startsWith('/api/cron')) {
+    return NextResponse.next();
+  }
+  
   return await updateSession(request)
 }
 
@@ -12,11 +21,8 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - api/sync (public sync endpoints)
-     * - api/admin (public admin endpoints)
-     * - api/cron (cron job endpoints)
-     * Feel free to modify this pattern to include more paths.
+     * Public API routes are handled explicitly in middleware function
      */
-    '/((?!_next/static|_next/image|favicon.ico|api/sync|api/admin|api/cron|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

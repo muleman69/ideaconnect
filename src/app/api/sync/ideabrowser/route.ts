@@ -47,7 +47,18 @@ export async function GET() {
       }
     });
   } catch (error) {
-    return handleApiError(error, 'ideabrowser-sync');
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error(`IdeaBrowser sync failed: ${errorMessage}`);
+    
+    return NextResponse.json(
+      { 
+        success: false,
+        error: 'Sync failed',
+        details: errorMessage,
+        timestamp: new Date().toISOString()
+      },
+      { status: 500 }
+    );
   }
 }
 

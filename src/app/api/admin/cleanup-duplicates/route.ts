@@ -25,11 +25,11 @@ export async function POST() {
     lastCleanupTime = now;
     logger.info('Starting manual duplicate cleanup');
     
-    // Find ideas with duplicate titles (case insensitive)
-    const duplicateGroups = await prisma.$queryRaw<{title: string, ids: string[], count: number}[]>`
+    // Find ideas with duplicate titles (case insensitive) - using safer approach
+    const duplicateGroups = await prisma.$queryRaw<{title: string, ids: string[], count: bigint}[]>`
       SELECT 
         LOWER(title) as title,
-        array_agg(id ORDER BY "createdAt" ASC) as ids,
+        array_agg(id::text ORDER BY "createdAt" ASC) as ids,
         COUNT(*) as count
       FROM ideas 
       GROUP BY LOWER(title) 
@@ -39,22 +39,31 @@ export async function POST() {
     let deletedCount = 0;
     const deletedTitles: string[] = [];
     
+    logger.info(`Found ${duplicateGroups.length} groups with duplicate titles`);
+    
     for (const group of duplicateGroups) {
-      if (group.ids && group.ids.length > 1) {
-        // Keep the first one (oldest, usually best quality), delete the rest
-        const idsToDelete = group.ids.slice(1);
-        
-        const deleted = await prisma.idea.deleteMany({
-          where: {
-            id: {
-              in: idsToDelete
+      try {
+        if (group.ids && group.ids.length > 1) {
+          // Keep the first one (oldest, usually best quality), delete the rest
+          const idsToDelete = group.ids.slice(1);
+          
+          logger.info(`Processing duplicates for "${group.title}": ${group.ids.length} total, deleting ${idsToDelete.length}`);
+          
+          const deleted = await prisma.idea.deleteMany({
+            where: {
+              id: {
+                in: idsToDelete
+              }
             }
-          }
-        });
-        
-        deletedCount += deleted.count;
-        deletedTitles.push(`"${group.title}" (${deleted.count} duplicates removed)`);
-        logger.info(`Removed ${deleted.count} duplicates of "${group.title}"`);
+          });
+          
+          deletedCount += deleted.count;
+          deletedTitles.push(`"${group.title}" (${deleted.count} duplicates removed)`);
+          logger.info(`Removed ${deleted.count} duplicates of "${group.title}"`);
+        }
+      } catch (error) {
+        logger.error(`Error deleting duplicates for "${group.title}": ${error instanceof Error ? error.message : 'Unknown error'}`);
+        // Continue with other groups even if one fails
       }
     }
     
@@ -96,12 +105,16 @@ export async function POST() {
     });
     
   } catch (error) {
-    logger.error('Manual duplicate cleanup failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : 'No stack trace';
+    
+    logger.error(`Manual duplicate cleanup failed: ${errorMessage}`);
     
     return NextResponse.json(
       { 
         success: false,
         error: 'Duplicate cleanup failed',
+        details: errorMessage,
         timestamp: new Date().toISOString()
       },
       { status: 500 }
