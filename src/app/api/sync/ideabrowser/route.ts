@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { IdeaBrowserSync } from '@/lib/ideabrowser-sync';
-import { handleApiError } from '@/lib/error-handler';
 import { logger } from '@/lib/logger';
 
 // Simple rate limiting - track last sync time

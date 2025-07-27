@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { 
@@ -77,14 +77,7 @@ export default function IdeaDetailPage() {
   const [isInterested, setIsInterested] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'discussions' | 'teams'>('overview');
 
-  useEffect(() => {
-    if (ideaId) {
-      fetchIdea();
-      checkInterestStatus();
-    }
-  }, [ideaId]);
-
-  const fetchIdea = async () => {
+  const fetchIdea = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/ideas/${ideaId}`);
@@ -98,9 +91,9 @@ export default function IdeaDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [ideaId]);
 
-  const checkInterestStatus = async () => {
+  const checkInterestStatus = useCallback(async () => {
     try {
       const response = await fetch(`/api/ideas/${ideaId}/interest`);
       if (response.ok) {
@@ -110,7 +103,14 @@ export default function IdeaDetailPage() {
     } catch (err) {
       console.error('Failed to check interest status:', err);
     }
-  };
+  }, [ideaId]);
+
+  useEffect(() => {
+    if (ideaId) {
+      fetchIdea();
+      checkInterestStatus();
+    }
+  }, [ideaId, fetchIdea, checkInterestStatus]);
 
   const handleInterestToggle = async () => {
     try {

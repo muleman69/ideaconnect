@@ -1,14 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { IdeaBrowserSync } from '@/lib/ideabrowser-sync';
 import { protectDevRoute } from '@/lib/dev-protection';
 import { handleApiError } from '@/lib/error-handler';
 import { logger } from '@/lib/logger';
 
 // Development-only endpoint for syncing IdeaBrowser data without authentication
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     // Only allow in development environment
-    protectDevRoute(request);
+    protectDevRoute();
 
     logger.info('Starting development IdeaBrowser sync');
     const results = await IdeaBrowserSync.syncIdeas();

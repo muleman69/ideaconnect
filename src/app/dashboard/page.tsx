@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -131,7 +132,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Ideas You're Interested In</CardTitle>
+              <CardTitle className="text-sm font-medium">Ideas You&#39;re Interested In</CardTitle>
               <Lightbulb className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -175,7 +176,7 @@ export default function DashboardPage() {
             <div className="mb-8">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-foreground">Today's Featured Idea</h2>
+                  <h2 className="text-2xl font-bold text-foreground">Today&#39;s Featured Idea</h2>
                   <p className="text-muted-foreground">Handpicked startup opportunity from IdeaBrowser</p>
                 </div>
                 <Badge variant="secondary" className="flex items-center gap-1">
@@ -200,10 +201,10 @@ export default function DashboardPage() {
                   <p className="text-muted-foreground">Latest startup opportunities from the community</p>
                 </div>
                 <Button variant="outline" asChild>
-                  <a href="/ideas">
+                  <Link href="/ideas">
                     Browse All Ideas
                     <ArrowRight className="ml-2 h-4 w-4" />
-                  </a>
+                  </Link>
                 </Button>
               </div>
               
@@ -230,10 +231,10 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <Button className="w-full justify-start" asChild>
-                  <a href="/ideas">
+                  <Link href="/ideas">
                     <Lightbulb className="mr-2 h-4 w-4" />
                     Browse Ideas
-                  </a>
+                  </Link>
                 </Button>
                 <Button variant="outline" className="w-full justify-start">
                   <Users className="mr-2 h-4 w-4" />
@@ -254,7 +255,7 @@ export default function DashboardPage() {
             <Card>
               <CardHeader>
                 <CardTitle>My Interested Ideas</CardTitle>
-                <CardDescription>Ideas you've shown interest in</CardDescription>
+                <CardDescription>Ideas you&#39;ve shown interest in</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
@@ -264,9 +265,9 @@ export default function DashboardPage() {
                       <p className="text-xs text-muted-foreground">FinTech • 24 interested</p>
                     </div>
                     <Button variant="ghost" size="sm" asChild>
-                      <a href="/ideas/1">
+                      <Link href="/ideas/1">
                         <ArrowRight className="h-4 w-4" />
-                      </a>
+                      </Link>
                     </Button>
                   </div>
                   <div className="flex items-center justify-between p-3 rounded-lg border">
@@ -275,9 +276,9 @@ export default function DashboardPage() {
                       <p className="text-xs text-muted-foreground">Education • 22 interested</p>
                     </div>
                     <Button variant="ghost" size="sm" asChild>
-                      <a href="/ideas/4">
+                      <Link href="/ideas/4">
                         <ArrowRight className="h-4 w-4" />
-                      </a>
+                      </Link>
                     </Button>
                   </div>
                 </div>

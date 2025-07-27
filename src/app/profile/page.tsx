@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -35,7 +36,7 @@ export default async function ProfilePage() {
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <h3 className="font-medium text-blue-900 mb-2">Complete Your Profile</h3>
               <p className="text-blue-800 text-sm mb-3">
-                Add your skills, interests, and what you're looking for to get better matches with potential co-founders.
+                Add your skills, interests, and what you&#39;re looking for to get better matches with potential co-founders.
               </p>
               <div className="space-y-2">
                 <div className="flex items-center">
@@ -67,12 +68,12 @@ export default async function ProfilePage() {
               >
                 Go to Dashboard
               </a>
-              <a 
+              <Link 
                 href="/ideas" 
                 className="block bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 transition-colors text-center"
               >
                 Browse Ideas
-              </a>
+              </Link>
             </div>
           </div>
         </div>

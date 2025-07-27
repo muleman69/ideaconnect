@@ -6,7 +6,7 @@ export default function UnsubscribePage() {
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            We're sorry to see you go!
+            We&#39;re sorry to see you go!
           </h2>
           <p className="text-gray-600 mb-6">
             You can manage your email preferences or unsubscribe from our communications below.

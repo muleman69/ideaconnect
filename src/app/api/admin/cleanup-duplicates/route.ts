@@ -106,7 +106,6 @@ export async function POST() {
     
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    const errorStack = error instanceof Error ? error.stack : 'No stack trace';
     
     logger.error(`Manual duplicate cleanup failed: ${errorMessage}`);
     

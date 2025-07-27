@@ -104,7 +104,7 @@ export default async function IdeasPage() {
             </Link>
           </div>
           <p className="text-sm text-gray-500">
-            Or use the "Sync New Ideas" button on the homepage
+            Or use the &quot;Sync New Ideas&quot; button on the homepage
           </p>
         </div>
       </div>

@@ -156,7 +156,7 @@ export default function RecentIdeas() {
               Fresh Ideas Loading...
             </h3>
             <p className="text-gray-600 mb-4">
-              We're syncing the latest startup ideas from IdeaBrowser.com. Check back in a few minutes!
+              We&#39;re syncing the latest startup ideas from IdeaBrowser.com. Check back in a few minutes!
             </p>
             <div className="text-sm text-gray-500">
               💡 Ideas sync automatically every day at 9 AM UTC
