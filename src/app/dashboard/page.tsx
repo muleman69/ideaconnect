@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
@@ -10,10 +10,48 @@ import { Badge } from '@/components/ui/badge'
 import { Lightbulb, Users, MessageCircle, TrendingUp, ArrowRight, Star, Plus } from 'lucide-react'
 import { IdeaCard } from '@/components/ideas/IdeaCard'
 
+interface FeaturedIdea {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  difficultyLevel: number;
+  marketSize: string;
+  sourceUrl?: string;
+  interestCount: number;
+  discussionCount: number;
+  teamCount: number;
+  createdAt: Date;
+}
+
+interface RecentIdea {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  difficultyLevel: number;
+  marketSize: string;
+  interestCount: number;
+  discussionCount: number;
+  teamCount: number;
+  createdAt: Date;
+}
+
+interface UserStats {
+  ideasInterested: number;
+  activeTeams: number;
+  connections: number;
+}
+
 export default function DashboardPage() {
   const [user, setUser] = useState<{ id: string; email?: string; user_metadata?: { name?: string } } | null>(null)
   const [loading, setLoading] = useState(true)
-  const [userInterestedIdeas, setUserInterestedIdeas] = useState<string[]>(['1', '4'])
+  const [featuredIdea, setFeaturedIdea] = useState<FeaturedIdea | null>(null)
+  const [recentIdeas, setRecentIdeas] = useState<RecentIdea[]>([])
+  const [userStats, setUserStats] = useState<UserStats>({ ideasInterested: 0, activeTeams: 0, connections: 0 })
+  const [userInterestedIdeas, setUserInterestedIdeas] = useState<string[]>([])
+  const [dataLoading, setDataLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   
   useEffect(() => {
     const checkUser = async () => {
@@ -31,14 +69,75 @@ export default function DashboardPage() {
     
     checkUser()
   }, [])
+
+  const fetchDashboardData = useCallback(async () => {
+    try {
+      setDataLoading(true)
+      setError(null)
+
+      // Fetch featured idea
+      const featuredResponse = await fetch('/api/ideas/featured')
+      if (featuredResponse.ok) {
+        const featuredData = await featuredResponse.json()
+        setFeaturedIdea(featuredData.idea)
+      }
+
+      // Fetch recent ideas
+      const ideasResponse = await fetch('/api/ideas?limit=3')
+      if (ideasResponse.ok) {
+        const ideasData = await ideasResponse.json()
+        setRecentIdeas(ideasData.ideas || [])
+      }
+
+      // TODO: Fetch real user stats when endpoints are available
+      // For now, use placeholder values
+      setUserStats({
+        ideasInterested: userInterestedIdeas.length,
+        activeTeams: 0, // Will be replaced with real data
+        connections: 0  // Will be replaced with real data
+      })
+
+    } catch (err) {
+      console.error('Failed to fetch dashboard data:', err)
+      setError('Failed to load dashboard data')
+    } finally {
+      setDataLoading(false)
+    }
+  }, [userInterestedIdeas.length])
+
+  useEffect(() => {
+    if (user) {
+      fetchDashboardData()
+    }
+  }, [user, fetchDashboardData])
   
-  const handleInterestToggle = (ideaId: string) => {
-    setUserInterestedIdeas(prev => 
-      prev.includes(ideaId) 
-        ? prev.filter(id => id !== ideaId)
-        : [...prev, ideaId]
-    )
-    console.log('Interest toggled for idea:', ideaId)
+  const handleInterestToggle = async (ideaId: string) => {
+    try {
+      const response = await fetch(`/api/ideas/${ideaId}/interest`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        
+        // Update local state
+        setUserInterestedIdeas(prev => 
+          data.interested 
+            ? [...prev, ideaId]
+            : prev.filter(id => id !== ideaId)
+        )
+
+        // Refresh dashboard data to get updated counts
+        fetchDashboardData()
+      } else {
+        console.error('Failed to toggle interest')
+      }
+    } catch (err) {
+      console.error('Error toggling interest:', err)
+    }
   }
   
   if (loading) {
@@ -53,66 +152,32 @@ export default function DashboardPage() {
     return null // Will redirect
   }
 
-  // Mock data for now - will be replaced with real data later
-  const featuredIdea = {
-    id: '1',
-    title: 'AI-Powered Personal Finance Assistant',
-    description: 'A smart financial advisor that uses machine learning to provide personalized investment recommendations and budget optimization. The platform would analyze spending patterns, market trends, and individual goals to offer tailored financial advice.',
-    category: 'FinTech',
-    difficultyLevel: 3,
-    marketSize: 'Large',
-    sourceUrl: 'https://ideabrowser.com/ideas/ai-finance-assistant',
-    featuredDate: new Date(),
-    isFeatured: true,
-    interestCount: 24,
-    discussionCount: 8,
-    teamCount: 2,
-    createdAt: new Date('2024-01-10')
+  // Show loading state while fetching data
+  if (dataLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex items-center justify-center min-h-96">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
-  const recentIdeas = [
-    {
-      id: '2',
-      title: 'Virtual Reality Fitness Platform',
-      description: 'Immersive workout experiences in virtual worlds with real-time performance tracking and social challenges.',
-      category: 'Health & Fitness',
-      difficultyLevel: 4,
-      marketSize: 'Medium',
-      interestCount: 18,
-      discussionCount: 5,
-      teamCount: 1,
-      createdAt: new Date('2024-01-09')
-    },
-    {
-      id: '3',
-      title: 'Smart Home Energy Optimizer',
-      description: 'AI-driven system to reduce household energy consumption through intelligent device management.',
-      category: 'GreenTech',
-      difficultyLevel: 2,
-      marketSize: 'Large',
-      interestCount: 15,
-      discussionCount: 3,
-      teamCount: 0,
-      createdAt: new Date('2024-01-08')
-    },
-    {
-      id: '4',
-      title: 'Collaborative Learning Platform',
-      description: 'Peer-to-peer skill sharing and mentorship network with gamification elements.',
-      category: 'Education',
-      difficultyLevel: 3,
-      marketSize: 'Medium',
-      interestCount: 22,
-      discussionCount: 12,
-      teamCount: 3,
-      createdAt: new Date('2024-01-07')
-    }
-  ]
-
-  const userStats = {
-    ideasInterested: 5,
-    activeTeams: 2,
-    connections: 12
+  // Show error state if data failed to load
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center py-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Unable to Load Dashboard</h2>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <Button onClick={fetchDashboardData}>Try Again</Button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -185,12 +250,18 @@ export default function DashboardPage() {
                 </Badge>
               </div>
               
-              <IdeaCard 
-                idea={featuredIdea}
-                variant="featured"
-                isInterested={userInterestedIdeas.includes(featuredIdea.id)}
-                onInterestToggle={handleInterestToggle}
-              />
+              {featuredIdea ? (
+                <IdeaCard 
+                  idea={featuredIdea}
+                  variant="featured"
+                  isInterested={userInterestedIdeas.includes(featuredIdea.id)}
+                  onInterestToggle={handleInterestToggle}
+                />
+              ) : (
+                <div className="bg-white rounded-lg shadow-sm border p-6 text-center">
+                  <p className="text-gray-500">No featured idea available</p>
+                </div>
+              )}
             </div>
 
             {/* Recent Ideas */}
@@ -209,15 +280,22 @@ export default function DashboardPage() {
               </div>
               
               <div className="grid gap-6">
-                {recentIdeas.map((idea) => (
-                  <IdeaCard 
-                    key={idea.id}
-                    idea={idea}
-                    variant="compact"
-                    isInterested={userInterestedIdeas.includes(idea.id)}
-                    onInterestToggle={handleInterestToggle}
-                  />
-                ))}
+                {recentIdeas.length > 0 ? (
+                  recentIdeas.map((idea) => (
+                    <IdeaCard 
+                      key={idea.id}
+                      idea={idea}
+                      variant="compact"
+                      isInterested={userInterestedIdeas.includes(idea.id)}
+                      onInterestToggle={handleInterestToggle}
+                    />
+                  ))
+                ) : (
+                  <div className="bg-white rounded-lg shadow-sm border p-6 text-center">
+                    <p className="text-gray-500">No recent ideas available</p>
+                    <p className="text-sm text-gray-400 mt-2">Check back later for new startup opportunities!</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
