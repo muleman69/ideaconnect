@@ -836,7 +836,7 @@ export class IdeaBrowserSync {
       if (todaysIdea) {
         await prisma.idea.update({
           where: { id: todaysIdea.id },
-          data: { isFeatured: true }
+          data: { isFeatured: true, featuredDate: new Date() }
         });
         console.log(`Featured idea set: ${todaysIdea.title}`);
         return;
@@ -860,7 +860,7 @@ export class IdeaBrowserSync {
       if (recentIdeaOfTheDay) {
         await prisma.idea.update({
           where: { id: recentIdeaOfTheDay.id },
-          data: { isFeatured: true }
+          data: { isFeatured: true, featuredDate: new Date() }
         });
         console.log(`Featured idea set: ${recentIdeaOfTheDay.title}`);
         return;
@@ -923,7 +923,7 @@ export class IdeaBrowserSync {
       if (featuredIdea) {
         await prisma.idea.update({
           where: { id: featuredIdea.id },
-          data: { isFeatured: true }
+          data: { isFeatured: true, featuredDate: new Date() }
         });
         console.log(`Featured idea set: ${featuredIdea.title}`);
       }

@@ -1,64 +1,54 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { IdeaBrowserSync } from '@/lib/ideabrowser-sync';
 import { logger } from '@/lib/logger';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+let isRunning = false;
+
 export async function GET(request: NextRequest) {
   try {
-    // Verify the request is from Vercel Cron
+    // Verify request (Authorization bearer; optional UA informational)
     const authHeader = request.headers.get('authorization');
+    const userAgent = request.headers.get('user-agent') || '';
     const cronSecret = process.env.CRON_SECRET;
-    
-    if (!cronSecret) {
-      logger.error('CRON_SECRET environment variable not set');
-      return NextResponse.json(
-        { error: 'Cron secret not configured' },
-        { status: 500 }
-      );
-    }
-    
-    if (authHeader !== `Bearer ${cronSecret}`) {
+
+    const okBearer = !!cronSecret && authHeader === `Bearer ${cronSecret}`;
+    const okUA = userAgent.toLowerCase().includes('vercel-cron'); // informational only
+
+    if (!okBearer && !okUA) {
       logger.warn('Unauthorized cron request attempt');
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return new Response('Unauthorized', { status: 401 });
     }
-    
+
+    if (isRunning) {
+      logger.warn('Cron sync skipped: job already running');
+      return Response.json({ ok: false, reason: 'already-running' }, { status: 429 });
+    }
+
+    isRunning = true;
+    const started = Date.now();
     logger.info('Starting automated daily sync from cron job');
-    
-    // Run the sync
+
     const results = await IdeaBrowserSync.syncIdeas();
-    
+
+    const ms = Date.now() - started;
     logger.info('Automated daily sync completed successfully', {
       synced: results.synced,
       skipped: results.skipped,
       cleaned: results.cleaned,
       errors: results.errors.length,
+      durationMs: ms,
       timestamp: new Date().toISOString()
     });
-    
-    return NextResponse.json({
-      success: true,
-      message: `Daily sync completed successfully`,
-      results: {
-        synced: results.synced,
-        skipped: results.skipped,
-        cleaned: results.cleaned,
-        errors: results.errors.length,
-        timestamp: new Date().toISOString()
-      }
-    });
+
+    return Response.json({ ok: true, ms, ...results });
   } catch (error) {
     logger.error('Automated daily sync failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
-    
-    return NextResponse.json(
-      { 
-        success: false,
-        error: 'Daily sync failed',
-        timestamp: new Date().toISOString()
-      },
-      { status: 500 }
-    );
+    return Response.json({ ok: false, error: String(error) }, { status: 500 });
+  } finally {
+    isRunning = false;
   }
 }
 
